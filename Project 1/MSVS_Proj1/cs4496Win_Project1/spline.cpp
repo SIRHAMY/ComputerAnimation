@@ -66,7 +66,7 @@ void Spline2d::BezierInterpolate(std::vector<Eigen::Vector2d>& interpolatedSplin
 	//controlPoints_.at(0)(0) += 50;
 	*/
 
-	double tInc = 0.1;
+	double tInc = 0.05;
 	
 	int i = 3;
 	//Size one more than index
@@ -81,19 +81,6 @@ void Spline2d::BezierInterpolate(std::vector<Eigen::Vector2d>& interpolatedSplin
 }
 
 void Spline2d::BezierInterpolateHelper(std::vector<Eigen::Vector2d>& interpolatedSpline, int i, double tInc) {
-	/*
-	double p1X = controlPoints_.at(i - 3)(0);
-	double p1Y = controlPoints_.at(i - 3)(1);
-
-	double p2X = controlPoints_.at(i - 2)(0);
-	double p2Y = controlPoints_.at(i - 2)(1);
-
-	double p3X = controlPoints_.at(i - 1)(0);
-	double p3Y = controlPoints_.at(i - 1)(1);
-
-	double p4X = controlPoints_.at(i)(0);
-	double p4Y = controlPoints_.at(i)(1);
-	*/
 
 	Eigen::MatrixXd points(4, 2); // (controlPoints_.at(i - 3), controlPoints_.at(i - 2), controlPoints_.at(i - 1), controlPoints_.at(i));
 	points << controlPoints_.at(i - 3)(0), controlPoints_.at(i - 3)(1),
@@ -112,18 +99,72 @@ void Spline2d::BezierInterpolateHelper(std::vector<Eigen::Vector2d>& interpolate
 
 		Eigen::RowVector4d tVec(std::pow(t, 3), std::pow(t, 2), t, 1);
 
+		Eigen::RowVector4d bB = tVec * mB;
+
+		Eigen::Vector2d qT = bB * points;
+
+		interpolatedSpline.push_back(qT);
+
 		t += tInc;
+	}
+}
+
+void Spline2d::DeBoorInterpolate(std::vector<Eigen::Vector2d>& interpolatedSpline) {
+    // TODO: fill in code for deboor interpolation
+
+	//Debug
+	std::cout << "Debug: DeBoor Interpolate" << endl;
+
+	double tInc = 0.2;
+
+	int i = 3;
+	while (i < controlPoints_.size()) {
+		
+		DeBoorInterpolateHelper(interpolatedSpline, i, tInc);
+
+		//Check to make sure this is incrementing before the while loop is checked
+		i++;
+	}
+}
+
+void Spline2d::DeBoorInterpolateHelper(std::vector<Eigen::Vector2d>& interpolatedSpline, int i, double tInc) {
+
+	//Couldn't get above to work, so going to calculate Bezier points and then use Bezier alg as accepted on Piazza
+
+	Eigen::Vector2d b0(controlPoints_.at(i - 3)(0), controlPoints_.at(i - 3)(1));
+	Eigen::Vector2d b1(controlPoints_.at(i - 2)(0), controlPoints_.at(i - 2)(1));
+	Eigen::Vector2d b2(controlPoints_.at(i - 1)(0), controlPoints_.at(i - 1)(1));
+	Eigen::Vector2d b3(controlPoints_.at(i)(0), controlPoints_.at(i)(1));
+
+	Eigen::Vector2d v0 = ((double)1 / 2)*(b0 + ( ((double)2 / 3)*(b1 - b0) ) + b1 + ( ((double)1 / 3)*(b2 - b1) ) );
+	Eigen::Vector2d v1 = b1 + (((double)1 / 3) * (b2 - b1));
+	Eigen::Vector2d v2 = b1 + (((double)2 / 3) * (b2 - b1));
+	Eigen::Vector2d v3 = ((double)1 / 2) * (b1 + (((double)2 / 3) *(b2 - b1)) + b2 + (((double)1 / 3) * (b3 - b2)));
+
+	Eigen::MatrixXd points(4, 2); // (controlPoints_.at(i - 3), controlPoints_.at(i - 2), controlPoints_.at(i - 1), controlPoints_.at(i));
+	points << v0(0), v0(1),
+		v1(0), v1(1),
+		v2(0), v2(1),
+		v3(0), v3(1);
+
+	Eigen::MatrixXd mB(4, 4);
+	mB << -1, 3, -3, 1,
+		3, -6, 3, 0,
+		-3, 3, 0, 0,
+		1, 0, 0, 0;
+
+	double t = 0;
+	while (t < 1) {
+		Eigen::RowVector4d tVec(std::pow(t, 3), std::pow(t, 2), t, 1);
 
 		Eigen::RowVector4d bB = tVec * mB;
 
 		Eigen::Vector2d qT = bB * points;
 
 		interpolatedSpline.push_back(qT);
-	}
-}
 
-void Spline2d::DeBoorInterpolate(std::vector<Eigen::Vector2d>& interpolatedSpline) {
-    // TODO: fill in code for deboor interpolation
+		t += tInc;
+	}
 }
 
 void Spline2d::CatmullInterpolate(std::vector<Eigen::Vector2d>& interpolatedSpline) {
