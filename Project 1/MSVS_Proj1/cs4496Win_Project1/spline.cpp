@@ -30,6 +30,8 @@ void Spline2d::SetSplineType(Spline2d::SplineType type) {
 std::vector<Eigen::Vector2d> Spline2d::GetInterpolatedSpline() {
 	std::vector<Eigen::Vector2d> interpolatedSpline;
     interpolatedSpline.clear();
+
+	if(controlPoints_.size() > 0) controlPoints_.push_back(controlPoints_.front());
     
     if (type_ == Spline2d::LINEAR) {
         LinearInterpolate(interpolatedSpline);
@@ -40,6 +42,8 @@ std::vector<Eigen::Vector2d> Spline2d::GetInterpolatedSpline() {
     } else if (type_ == Spline2d::CATMULL) {
         CatmullInterpolate(interpolatedSpline);
     }
+
+	if(controlPoints_.size() > 0) controlPoints_.pop_back();
     
     return interpolatedSpline;
 }
