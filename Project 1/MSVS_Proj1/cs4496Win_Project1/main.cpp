@@ -127,6 +127,7 @@ void myGlutMouse(int button, int state, int x, int y) {
 		mySpline.AddPoint(Eigen::Vector2d(x, window_height - y));   // append control point to spline
 	}
 	else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+		if (!mySpline.RemovePoint(x, y, window_height))
 		mySpline.RemoveLastPoint(); // remove last added point
 	}
 

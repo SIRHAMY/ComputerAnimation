@@ -14,9 +14,26 @@ void Spline2d::AddPoint(const Eigen::Vector2d& pt) {
 }
 
 void Spline2d::RemoveLastPoint() {
+
     if (controlPoints_.size() != 0) {
         controlPoints_.erase(controlPoints_.end()-1);
     }
+}
+
+bool Spline2d::RemovePoint(int x, int y, int window_height) {
+	for (int i = 0; i < controlPoints_.size(); i++) {
+
+		std::cout << "Debug: Click - " << x << "," << y << endl;
+		std::cout << "Debug: Point - " << controlPoints_.at(i)(0) << "," << controlPoints_.at(i)(1) << endl;
+
+		if (controlPoints_.at(i)(0) > (x - 5) && controlPoints_.at(i)(0) < (x + 5)
+			&& controlPoints_.at(i)(1) > (window_height - y - 5) && controlPoints_.at(i)(1) < (window_height - y + 5)) {
+			controlPoints_.erase(controlPoints_.begin() + i);
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void Spline2d::RemoveAll() {
