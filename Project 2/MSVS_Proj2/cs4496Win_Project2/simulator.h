@@ -28,6 +28,7 @@ private:
     double mTimeStep;       // time step
     double mElapsedTime;    // time pased since beginning of simulation
 	double startingHeight;   //This is the startingHeight for all the particles
+	double startingVelocity; // A var to hold the initial velocity in the event I get extra credit
     std::vector<Particle> mParticles;
 };
 
