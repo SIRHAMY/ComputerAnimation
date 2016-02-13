@@ -13,10 +13,15 @@ Simulator::Simulator() {
     // Init particle positions (default is 0, 0, 0)
     mParticles[0].mPosition[0] = -0.3;
     mParticles[0].mPosition[1] = startingHeight;
+	mParticles[0].mVelocity(1) = startingVelocity;
+
     mParticles[1].mPosition[0] = 0.0;
     mParticles[1].mPosition[1] = startingHeight;
+	mParticles[1].mVelocity(1) = startingVelocity;
+
     mParticles[2].mPosition[0] = 0.3;
     mParticles[2].mPosition[1] = startingHeight;
+	mParticles[2].mVelocity(1) = startingVelocity;
     
     // Init particle colors (default is red)
     mParticles[1].mColor = Eigen::Vector4d(0.2, 0.2, 0.9, 1.0); // Blue
@@ -40,11 +45,16 @@ double Simulator::getTimeStep() {
 
 void Simulator::reset() {
     mParticles[0].mPosition[0] = -0.3;
-    mParticles[0].mPosition[1] = 20.0;
+    mParticles[0].mPosition[1] = startingHeight;
+	mParticles[0].mVelocity(1) = startingVelocity;
+
     mParticles[1].mPosition[0] = 0.0;
-    mParticles[1].mPosition[1] = 20.0;
+    mParticles[1].mPosition[1] = startingHeight;
+	mParticles[1].mVelocity(1) = startingVelocity;
+
     mParticles[2].mPosition[0] = 0.3;
-    mParticles[2].mPosition[1] = 20.0;
+    mParticles[2].mPosition[1] = startingHeight;
+	mParticles[2].mVelocity(1) = startingVelocity;
     
     for (int i = 0; i < 3; i++) {
         mParticles[i].mVelocity.setZero();
