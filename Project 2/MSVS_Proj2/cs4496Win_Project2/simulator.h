@@ -24,8 +24,9 @@ public:
     double getTimeStep();
     
     void reset();
-	double analyticalStep();
-	double explicitEulerStep();
+	void analyticalStep(int particle);
+	void explicitEulerStep(int particle);
+	void midpointStep(int particle);
 private:
     double mTimeStep;       // time step
     double mElapsedTime;    // time pased since beginning of simulation

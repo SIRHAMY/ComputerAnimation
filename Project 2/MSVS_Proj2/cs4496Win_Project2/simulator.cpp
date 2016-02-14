@@ -27,7 +27,7 @@ Simulator::Simulator() {
     mParticles[1].mColor = Eigen::Vector4d(0.2, 0.2, 0.9, 1.0); // Blue
     mParticles[2].mColor = Eigen::Vector4d(0.2, 0.2, 0.9, 1.0); // Blue
     
-    mTimeStep = 0.03;
+    mTimeStep = 0.01;
     mElapsedTime = 0;
 }
 
@@ -68,17 +68,18 @@ void Simulator::reset() {
 
 }
 
-double Simulator::analyticalStep() {
-	return -0.5 * 9.8 * (mElapsedTime * mElapsedTime) + startingHeight;
+void Simulator::analyticalStep(int particle) {
+	mParticles[particle].mPosition[1] =  -0.5 * 9.8 * (mElapsedTime * mElapsedTime) + startingHeight;
 }
 
-double Simulator::explicitEulerStep() {
-	double initialX = mParticles[1].mPosition[0];
-	double initialY = mParticles[1].mPosition[1];
+void Simulator::explicitEulerStep(int particle) {
+	mParticles[particle].mVelocity[1] += (-9.8 * mTimeStep);
 
-	mParticles[1].mVelocity[1] += (-9.8 * mTimeStep);
+	mParticles[particle].mPosition[1] += (mParticles[1].mVelocity[1] * mTimeStep);
 
-	return (mParticles[1].mVelocity[1] * mTimeStep);
+}
+
+void Simulator::midpointStep(int particle) {
 
 }
 
@@ -88,8 +89,9 @@ void Simulator::simulate() {
     //    mParticles[i].mPosition[1] -= 0.005;
     //}
 
-	mParticles[0].mPosition[1] = analyticalStep();
-	mParticles[1].mPosition[1] += explicitEulerStep();
+	analyticalStep(0);
+	explicitEulerStep(1);
+	analyticalStep(2);
     
     mElapsedTime += mTimeStep;
 }
