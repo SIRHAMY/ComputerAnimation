@@ -60,6 +60,9 @@ void Simulator::reset() {
         mParticles[i].mVelocity.setZero();
         mParticles[i].mAccumulatedForce.setZero();
     }
+
+	mParticles[1].mAccumulatedForce[1] = mParticles[1].mMass * -9.8;
+	mParticles[2].mAccumulatedForce[1] = mParticles[1].mMass * -9.8;
     
     mElapsedTime = 0;
 
@@ -70,6 +73,12 @@ double Simulator::analyticalStep() {
 }
 
 double Simulator::explicitEulerStep() {
+	double initialX = mParticles[1].mPosition[0];
+	double initialY = mParticles[1].mPosition[1];
+
+	mParticles[1].mVelocity[1] += (-9.8 * mTimeStep);
+
+	return (mParticles[1].mVelocity[1] * mTimeStep);
 
 }
 
@@ -80,6 +89,7 @@ void Simulator::simulate() {
     //}
 
 	mParticles[0].mPosition[1] = analyticalStep();
+	mParticles[1].mPosition[1] += explicitEulerStep();
     
     mElapsedTime += mTimeStep;
 }
