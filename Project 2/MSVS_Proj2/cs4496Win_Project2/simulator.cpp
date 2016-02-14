@@ -65,11 +65,21 @@ void Simulator::reset() {
 
 }
 
+double Simulator::analyticalStep() {
+	return -0.5 * 9.8 * (mElapsedTime * mElapsedTime) + startingHeight;
+}
+
+double Simulator::explicitEulerStep() {
+
+}
+
 void Simulator::simulate() {
     // TODO: Replace the following code
-    for (int i = 0; i < mParticles.size(); i++) {
-        mParticles[i].mPosition[1] -= 0.005;
-    }
+    //for (int i = 0; i < mParticles.size(); i++) {
+    //    mParticles[i].mPosition[1] -= 0.005;
+    //}
+
+	mParticles[0].mPosition[1] = analyticalStep();
     
     mElapsedTime += mTimeStep;
 }

@@ -24,6 +24,8 @@ public:
     double getTimeStep();
     
     void reset();
+	double analyticalStep();
+	double explicitEulerStep();
 private:
     double mTimeStep;       // time step
     double mElapsedTime;    // time pased since beginning of simulation
