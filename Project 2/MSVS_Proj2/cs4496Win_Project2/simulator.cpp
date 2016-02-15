@@ -43,6 +43,16 @@ double Simulator::getTimeStep() {
     return mTimeStep;
 }
 
+void Simulator::setInitialVelocity(double v0) {
+	//mParticles[0].mVelocity[1] = v0;
+	//mParticles[1].mVelocity[1] = v0;
+	//mParticles[2].mVelocity[1] = v0;
+
+	startingVelocity = v0;
+
+	reset();
+}
+
 void Simulator::reset() {
     mParticles[0].mPosition[0] = -0.3;
     mParticles[0].mPosition[1] = startingHeight;
@@ -57,7 +67,7 @@ void Simulator::reset() {
 	mParticles[2].mVelocity(1) = startingVelocity;
     
     for (int i = 0; i < 3; i++) {
-        mParticles[i].mVelocity.setZero();
+        //mParticles[i].mVelocity.setZero();
         mParticles[i].mAccumulatedForce.setZero();
     }
 
@@ -69,7 +79,10 @@ void Simulator::reset() {
 }
 
 void Simulator::analyticalStep(int particle) {
-	mParticles[particle].mPosition[1] =  -0.5 * 9.8 * (mElapsedTime * mElapsedTime) + startingHeight;
+	double changeY = mParticles[particle].mVelocity[1] * mElapsedTime + 0.5 *-9.8 * (mElapsedTime * mElapsedTime);
+
+	Eigen::Vector3d changeD = { 0, changeY, 0};
+	mParticles[particle].mPosition[1] =  changeD[1] + startingHeight;
 }
 
 void Simulator::explicitEulerStep(int particle) {

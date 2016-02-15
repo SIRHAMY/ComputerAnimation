@@ -27,6 +27,8 @@ Eigen::Vector2d mouse_click_position;
 // simulation related variables
 Simulator mySimulator;
 bool simulating = false;
+bool settingVelocity = false;
+double setVelocity = 0.0;
 int frame_number = 0;
 Timer timer;
 
@@ -156,6 +158,7 @@ void myGlutKeyboard(unsigned char key, int x, int y) {
             exit(0);
             break;
         case ' ':   // toggle simulation
+			if (settingVelocity) settingVelocity = false;
             simulating = !simulating;
             if (simulating) timer.start();
             break;
@@ -164,6 +167,22 @@ void myGlutKeyboard(unsigned char key, int x, int y) {
             frame_number = 0;
             simulating = false;
             break;
+		case 'w':  //Increase initial Velocity
+			setVelocity += 0.5;
+			break;
+		case 's': //Decrease initial velocity
+			setVelocity -= 0.5;
+			break;
+		case 'v':
+			simulating = false;
+			if (settingVelocity) {
+				mySimulator.setInitialVelocity(setVelocity);
+				settingVelocity = false;
+			}
+			else {
+				settingVelocity = true;
+			}
+			break;
         default:
             break;
     }
@@ -239,6 +258,15 @@ void ShowText()
     
     strcpy(s_tmp,"\'r\': Reset simulation");
     RenderBitmapString(10, 20 + 28, pFont, s_tmp);
+
+	if(!settingVelocity) strcpy(s_tmp, "\'v\': Set Initial Velocity with W (+= 0.5) and S (-= 0.5)");
+	else strcpy(s_tmp, "\'v\': Lock in velocity changes by pressing again ");
+	RenderBitmapString(10, 20 + 42, pFont, s_tmp);
+
+	if (settingVelocity) {
+		sprintf(s_tmp, "%d", setVelocity);
+		RenderBitmapString(10, 20 + 56, pFont, s_tmp);
+	}
     
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);

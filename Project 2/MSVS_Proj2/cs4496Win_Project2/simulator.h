@@ -22,6 +22,8 @@ public:
     Particle* getParticle(int);
     
     double getTimeStep();
+
+	void setInitialVelocity(double v0);
     
     void reset();
 	void analyticalStep(int particle);
