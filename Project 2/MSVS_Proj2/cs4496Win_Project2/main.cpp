@@ -260,7 +260,7 @@ void ShowText()
     RenderBitmapString(10, 20 + 28, pFont, s_tmp);
 
 	if(!settingVelocity) strcpy(s_tmp, "\'v\': Set Initial Velocity with W (+= 0.5) and S (-= 0.5)");
-	else strcpy(s_tmp, "\'v\': Lock in velocity changes by pressing again ");
+	else strcpy(s_tmp, "\'v\': Lock in velocity changes by pressing v again - W (+= 0.5) and S (-= 0.5) ");
 	RenderBitmapString(10, 20 + 42, pFont, s_tmp);
 
 	if (settingVelocity) {

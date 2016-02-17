@@ -87,10 +87,15 @@ void Simulator::analyticalStep(int particle) {
 
 void Simulator::explicitEulerStep(int particle) {
 
-	mParticles[particle].mPosition[1] += (mParticles[1].mVelocity[1] * mTimeStep);
+	Eigen::Vector3d changeD = { 0, (mParticles[particle].mVelocity[1] * mTimeStep) , 0 };
+	mParticles[particle].mPosition[1] = mParticles[particle].mPosition[1] + changeD[1];
 
-	mParticles[particle].mVelocity[1] += (-9.8 * mTimeStep);
+	Eigen::Vector3d changeV = { 0, -9.8 * mTimeStep, 0 };
 
+	mParticles[1].mVelocity[1] += changeV[1];
+
+
+	std::cout << "explicitEulerVelocity: " << mParticles[particle].mVelocity[1] << endl;
 }
 
 void Simulator::midpointStep(int particle) {
@@ -98,7 +103,7 @@ void Simulator::midpointStep(int particle) {
 	Eigen::Vector3d halfTimeStepChangeV = { 0, (mTimeStep * 0.5) * -9.8, 0 };
 
 	mParticles[particle].mVelocity[1] += halfTimeStepChangeV[1];
-
+	
 	mParticles[particle].mPosition[1] += (mTimeStep * mParticles[particle].mVelocity[1]);
 }
 
