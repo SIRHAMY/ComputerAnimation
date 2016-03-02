@@ -140,7 +140,22 @@ void Simulator::particleSim() {
 
 	Eigen::MatrixXd firstNum = (jacobi * W) * jacobiT;
 
-	Eigen::MatrixXd secNum = -1.0 * jacobiPrime * qDot - jacobi * W * Q;
+	//Don't know if I messed up or not, but these have to be 2x1 matrices to be used in the below equation. That's why I'm doing weird norms.
+	double ks = 0.000000001;
+	Eigen::MatrixXd dampingC(2, 1);
+	dampingC(0, 0) = (mParticles[0].mPosition - mParticles[1].mPosition).norm();
+	dampingC(1, 0) = (mParticles[1].mPosition - mParticles[0].mPosition).norm();
+	dampingC *= ks;
+
+	double kd = 0.000000001;
+	Eigen::MatrixXd dampingCPrime(2, 1);
+	dampingCPrime(0, 0) = (mParticles[0].mVelocity - mParticles[1].mVelocity).norm();
+	dampingCPrime(1, 0) = (mParticles[1].mVelocity - mParticles[0].mVelocity).norm();
+	dampingCPrime *= kd;
+
+	Eigen::MatrixXd secNum = -1.0 * jacobiPrime * qDot - jacobi * W * Q - dampingC - dampingCPrime;
+
+	//std::cout << "DEBUG: secNum R, C" << secNum.rows() << ", " << secNum.cols() << endl;
 
 	Eigen::MatrixXd Lambda = (firstNum).ldlt().solve(secNum);
 
@@ -149,7 +164,7 @@ void Simulator::particleSim() {
 	for (int part = 0; part < mParticles.size(); part++) {
 		mParticles[part].mAccumulatedForce[0] += constraintForce(part * 3 + 0, 0);
 		mParticles[part].mAccumulatedForce[1] += constraintForce(part * 3 + 1, 0);
-		mParticles[part].mAccumulatedForce[2] += constraintForce(part * 3 + 2, 0);
+		//mParticles[part].mAccumulatedForce[2] += constraintForce(part * 3 + 2, 0);
 	}
 }
 
