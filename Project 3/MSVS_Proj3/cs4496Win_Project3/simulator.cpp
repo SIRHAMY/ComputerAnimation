@@ -130,41 +130,19 @@ void Simulator::particleSim() {
 
 	Eigen::MatrixXd jacobiT = jacobi.transpose();
 
-	std::cout << "DEBUG: Jacobi R, C: " << jacobi.rows() << ", " << jacobi.cols() << endl;
-	std::cout << "DEBUG: W R, C: " << W.rows() << ", " << W.cols() << endl;
-	std::cout << "DEBUG: JacobiT R, C: " << jacobiT.rows() << jacobiT.cols() << endl;
-
 	Eigen::MatrixXd firstNum = (jacobi * W) * jacobiT;
-
-	std::cout << "DEBUG: FirstNum finally works" << endl;
-		
-	//Eigen::MatrixXd midNum = firstNum * jacobiT;
-
-	std::cout << "Debug: FirstNum passed" << endl;
 
 	Eigen::MatrixXd secNum = -1.0 * jacobiPrime * qDot - jacobi * W * Q;
 
-	std::cout << "Debug: SecNum Passed" << endl;
-	std::cout << "DEBUG: secNump1 R, C: " << (-1.0 * jacobiPrime * qDot).rows() << (-1.0 * jacobiPrime * qDot).cols() << endl;
-	std::cout << "DEBUG: secNump2 R, C: " << (jacobi * W * Q).rows() << (jacobi * W * Q).cols() << endl;
-
-	//Find out what's causing secNum to be 2x1
-	std::cout << "DEBUG: qDot R, C: " << qDot.rows() << qDot.cols() << endl;
-	std::cout << "DEBUG: Q R, C: " << Q.rows() << Q.cols() << endl;
-	std::cout << "DEBUG: jacobiPrime R, C: " << jacobiPrime.rows() << jacobiPrime.cols() << endl;
-
-	std::cout << "DEBUG: Firstnum R, C : " << firstNum.rows() << ", " << firstNum.cols() << endl;
-	std::cout << "DEBUG: secNum R, C : " << secNum.rows() << ", " << secNum.cols() << endl;
-
 	Eigen::MatrixXd Lambda = (firstNum).ldlt().solve(secNum);
-
-	std::cout << "Debug: Got Lambda... " << Lambda << endl;
-
-	std::cout << "DEBUG: Lambda R, C: " << Lambda.rows() << Lambda.cols() << endl;
 
 	Eigen::MatrixXd constraintForce = jacobiT * Lambda;
 
-	std::cout << "DEBUG: Got constraintForce" << endl;
+	for (int part = 0; part < mParticles.size(); part++) {
+		mParticles[part].mAccumulatedForce[0] += constraintForce(part * 3 + 0, 0);
+		mParticles[part].mAccumulatedForce[1] += constraintForce(part * 3 + 1, 0);
+		mParticles[part].mAccumulatedForce[2] += constraintForce(part * 3 + 2, 0);
+	}
 }
 
 void Simulator::simulate() {
@@ -177,11 +155,11 @@ void Simulator::simulate() {
 	//double lambda = getLambda(0);
 	//Eigen::Vector3d constraintForce = getConstraintForce(0, lambda);
 	//mParticles[0].mAccumulatedForce += constraintForce;
-	std::cout << "DEBUG: Do logs print? " << endl;
+	//std::cout << "DEBUG: Do logs print? " << endl;
 
 	particleSim();
 
-	std::cout << "DEBUG: Back in simulate()" << endl;
+	//std::cout << "DEBUG: Back in simulate()" << endl;
 
     for (int i = 0; i < mParticles.size(); i++) {
         mParticles[i].mPosition += mParticles[i].mVelocity * mTimeStep;
