@@ -87,14 +87,18 @@ void Simulator::particleSim() {
 		Q(p * 3 + 2, 0) = mParticles[p].mAccumulatedForce[2];
 
 
+		//Mass Settings
+		W(p * 3, p * 3) = 1.0 / mParticles[p].mMass;
+		W(p * 3 + 1, p * 3 + 1) = 1.0 / mParticles[p].mMass;
+		W(p * 3 + 2, p * 3 + 2) = 1.0 / mParticles[p].mMass;
 	}
 
 	//Matrices are (Rows, Columnms)
-	Eigen::MatrixXd Lambda(2, 1);
+	//Eigen::MatrixXd Lambda(2, 1);
 	Eigen::MatrixXd jacobi(2, 3 * mParticles.size());
 	Eigen::MatrixXd jacobiPrime(2, 3 * mParticles.size());
 
-	Lambda.setZero();
+	//Lambda.setZero();
 	jacobi.setZero();
 	jacobiPrime.setZero();
 
@@ -123,8 +127,44 @@ void Simulator::particleSim() {
 	jacobiPrime(1, 3) = jacobi(1, 3) * mParticles[1].mVelocity[0];
 	jacobiPrime(1, 4) = jacobi(1, 4) * mParticles[1].mVelocity[1];
 	jacobiPrime(1, 5) = jacobi(1, 5) * mParticles[1].mVelocity[2];
-}
-}
+
+	Eigen::MatrixXd jacobiT = jacobi.transpose();
+
+	std::cout << "DEBUG: Jacobi R, C: " << jacobi.rows() << ", " << jacobi.cols() << endl;
+	std::cout << "DEBUG: W R, C: " << W.rows() << ", " << W.cols() << endl;
+	std::cout << "DEBUG: JacobiT R, C: " << jacobiT.rows() << jacobiT.cols() << endl;
+
+	Eigen::MatrixXd firstNum = (jacobi * W) * jacobiT;
+
+	std::cout << "DEBUG: FirstNum finally works" << endl;
+		
+	//Eigen::MatrixXd midNum = firstNum * jacobiT;
+
+	std::cout << "Debug: FirstNum passed" << endl;
+
+	Eigen::MatrixXd secNum = -1.0 * jacobiPrime * qDot - jacobi * W * Q;
+
+	std::cout << "Debug: SecNum Passed" << endl;
+	std::cout << "DEBUG: secNump1 R, C: " << (-1.0 * jacobiPrime * qDot).rows() << (-1.0 * jacobiPrime * qDot).cols() << endl;
+	std::cout << "DEBUG: secNump2 R, C: " << (jacobi * W * Q).rows() << (jacobi * W * Q).cols() << endl;
+
+	//Find out what's causing secNum to be 2x1
+	std::cout << "DEBUG: qDot R, C: " << qDot.rows() << qDot.cols() << endl;
+	std::cout << "DEBUG: Q R, C: " << Q.rows() << Q.cols() << endl;
+	std::cout << "DEBUG: jacobiPrime R, C: " << jacobiPrime.rows() << jacobiPrime.cols() << endl;
+
+	std::cout << "DEBUG: Firstnum R, C : " << firstNum.rows() << ", " << firstNum.cols() << endl;
+	std::cout << "DEBUG: secNum R, C : " << secNum.rows() << ", " << secNum.cols() << endl;
+
+	Eigen::MatrixXd Lambda = (firstNum).ldlt().solve(secNum);
+
+	std::cout << "Debug: Got Lambda... " << Lambda << endl;
+
+	std::cout << "DEBUG: Lambda R, C: " << Lambda.rows() << Lambda.cols() << endl;
+
+	Eigen::MatrixXd constraintForce = jacobiT * Lambda;
+
+	std::cout << "DEBUG: Got constraintForce" << endl;
 }
 
 void Simulator::simulate() {
@@ -134,13 +174,14 @@ void Simulator::simulate() {
     }
 
 	//Going to implement constraint force on first particle
-	double lambda = getLambda(0);
-	Eigen::Vector3d constraintForce = getConstraintForce(0, lambda);
-	mParticles[0].mAccumulatedForce += constraintForce;
+	//double lambda = getLambda(0);
+	//Eigen::Vector3d constraintForce = getConstraintForce(0, lambda);
+	//mParticles[0].mAccumulatedForce += constraintForce;
+	std::cout << "DEBUG: Do logs print? " << endl;
 
+	particleSim();
 
-	//Eigen::Vector3d constraintForce2 = getConstraintForce(1, getLambda(1));
-	//mParticles[1].mAccumulatedForce += constraintForce2;
+	std::cout << "DEBUG: Back in simulate()" << endl;
 
     for (int i = 0; i < mParticles.size(); i++) {
         mParticles[i].mPosition += mParticles[i].mVelocity * mTimeStep;
