@@ -27,6 +27,7 @@ public:
 	double getLambda(int particleNum);
 	Eigen::Vector3d getConstraintForce(int particleNum, double lambda);
 	Eigen::Vector3d getLegalAcceleration(int particleNum, Eigen::Vector3d constraintForce);
+	void particleSim();
 private:
     double mTimeStep;       // time step
     std::vector<Particle> mParticles;

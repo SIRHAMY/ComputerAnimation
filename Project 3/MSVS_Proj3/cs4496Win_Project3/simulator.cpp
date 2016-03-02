@@ -65,6 +65,38 @@ Eigen::Vector3d Simulator::getLegalAcceleration(int particleNum, Eigen::Vector3d
 	return (constraintForce + force) / mass;
 }
 
+void Simulator::particleSim() {
+
+	Eigen::MatrixXd qDot(3 * mParticles.size(), 1);
+	Eigen::MatrixXd Q(3 * mParticles.size(), 1);
+	Eigen::MatrixXd W(3 * mParticles.size(), 3 * mParticles.size());
+
+	qDot.setZero();
+
+	for (int p = 0; p < mParticles.size(); p++) {
+		//Velocity Setting
+		qDot(p * 3, 0) = mParticles[p].mVelocity[0]; //Insert xVel
+		qDot(p * 3 + 1, 0) = mParticles[p].mVelocity[1]; //Insert yVel
+		qDot(p * 3 + 2, 0) = mParticles[p].mVelocity[2]; //Insert zVel
+
+		//Force Setting
+		Q(p * 3, 0) = mParticles[p].mAccumulatedForce[0];
+		Q(p * 3 + 1, 0) = mParticles[p].mAccumulatedForce[1];
+		Q(p * 3 + 2, 0) = mParticles[p].mAccumulatedForce[2];
+
+
+	}
+
+	//Matrices are (Rows, Columnms)
+	Eigen::MatrixXd Lambda(2, 1);
+	Eigen::MatrixXd jacobi(2, 3 * mParticles.size());
+	Eigen::MatrixXd jacobiPrime(2, 3 * mParticles.size());
+
+	//Set first constraint
+	for (int i = 0; i < 3; i++) jacobi(i, 0) = mParticles[0].mPosition[0]
+	
+}
+
 void Simulator::simulate() {
     // TODO:
     for (int i = 0; i < mParticles.size(); i++) {
@@ -73,17 +105,12 @@ void Simulator::simulate() {
 
 	//Going to implement constraint force on first particle
 	double lambda = getLambda(0);
-	//std::cout << "Testing Lambda: " << lambda << endl;
-
 	Eigen::Vector3d constraintForce = getConstraintForce(0, lambda);
-	//std::cout << "Testing constraintForce: " << constraintForce << endl;
-
-	Eigen::Vector3d legalAcceleration = getLegalAcceleration(0, constraintForce);
-	//std::cout << "Testing legalAcceleration: " << legalAcceleration << endl;
-
-	//mParticles[0].mVelocity += legalAcceleration;
 	mParticles[0].mAccumulatedForce += constraintForce;
-	mParticles[1].mAccumulatedForce += constraintForce;
+
+
+	//Eigen::Vector3d constraintForce2 = getConstraintForce(1, getLambda(1));
+	//mParticles[1].mAccumulatedForce += constraintForce2;
 
     for (int i = 0; i < mParticles.size(); i++) {
         mParticles[i].mPosition += mParticles[i].mVelocity * mTimeStep;
