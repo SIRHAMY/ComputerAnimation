@@ -41,11 +41,45 @@ void Simulator::reset() {
     
 }
 
+double Simulator::getLambda(int particleNum) {
+	double mass = mParticles[particleNum].mMass;
+	Eigen::Vector3d velocity = mParticles[particleNum].mVelocity;
+	Eigen::Vector3d position = mParticles[particleNum].mPosition;
+	Eigen::Vector3d force = mParticles[particleNum].mAccumulatedForce;
+
+	double firstNum = force.dot(position) - (mass * velocity).dot(velocity);
+
+	return firstNum / (position.dot(position));
+}
+
+Eigen::Vector3d Simulator::getConstraintForce(int particleNum, double lambda) {
+	Eigen::Vector3d position = mParticles[particleNum].mPosition;
+
+	return lambda * position;
+}
+
+Eigen::Vector3d Simulator::getLegalAcceleration(int particleNum, Eigen::Vector3d constraintForce) {
+	Eigen::Vector3d force = mParticles[particleNum].mAccumulatedForce;
+	double mass = mParticles[particleNum].mMass;
+
+	return (constraintForce + force) / mass;
+}
+
 void Simulator::simulate() {
     // TODO:
     for (int i = 0; i < mParticles.size(); i++) {
         mParticles[i].mAccumulatedForce[1] -= 9.8 * mParticles[i].mMass;
     }
+
+	//Going to implement constraint force on first particle
+	double lambda = getLambda(0);
+	std::cout << "Testing Lambda: " << lambda << endl;
+
+	Eigen::Vector3d constraintForce = getConstraintForce(0, lambda);
+	std::cout << "Testing constraintForce: " << constraintForce << endl;
+
+	Eigen::Vector3d legalAcceleration = getLegalAcceleration(0, constraintForce);
+	std::cout << "Testing legalAcceleration: " << legalAcceleration << endl;
     
     for (int i = 0; i < mParticles.size(); i++) {
         mParticles[i].mPosition += mParticles[i].mVelocity * mTimeStep;

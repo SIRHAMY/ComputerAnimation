@@ -24,6 +24,9 @@ public:
     double getTimeStep();
     
     void reset();
+	double getLambda(int particleNum);
+	Eigen::Vector3d getConstraintForce(int particleNum, double lambda);
+	Eigen::Vector3d getLegalAcceleration(int particleNum, Eigen::Vector3d constraintForce);
 private:
     double mTimeStep;       // time step
     std::vector<Particle> mParticles;
