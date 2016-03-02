@@ -115,18 +115,26 @@ void Simulator::particleSim() {
 	jacobi(1, 1) = mParticles[0].mPosition[1] - mParticles[1].mPosition[1];
 	jacobi(1, 2) = mParticles[0].mPosition[2] - mParticles[1].mPosition[2];
 
-	jacobiPrime(1, 0) = jacobi(1, 0) * mParticles[0].mVelocity[0];
-	jacobiPrime(1, 1) = jacobi(1, 1) * mParticles[0].mVelocity[1];
-	jacobiPrime(1, 2) = jacobi(1, 2) * mParticles[0].mVelocity[2];
+	//jacobiPrime(1, 0) = jacobi(1, 0) * mParticles[0].mVelocity[0];
+	//jacobiPrime(1, 1) = jacobi(1, 1) * mParticles[0].mVelocity[1];
+	//jacobiPrime(1, 2) = jacobi(1, 2) * mParticles[0].mVelocity[2];
+
+	jacobiPrime(1, 0) = mParticles[0].mVelocity[0] - mParticles[1].mVelocity[0];
+	jacobiPrime(1, 1) = mParticles[0].mVelocity[1] - mParticles[1].mVelocity[1];
+	jacobiPrime(1, 2) = mParticles[0].mVelocity[2] - mParticles[1].mVelocity[2];
 
 	//P2 - P1
 	jacobi(1, 3) = mParticles[1].mPosition[0] - mParticles[0].mPosition[0];
 	jacobi(1, 4) = mParticles[1].mPosition[1] - mParticles[0].mPosition[1];
 	jacobi(1, 5) = mParticles[1].mPosition[2] - mParticles[0].mPosition[2];
 	
-	jacobiPrime(1, 3) = jacobi(1, 3) * mParticles[1].mVelocity[0];
-	jacobiPrime(1, 4) = jacobi(1, 4) * mParticles[1].mVelocity[1];
-	jacobiPrime(1, 5) = jacobi(1, 5) * mParticles[1].mVelocity[2];
+	//jacobiPrime(1, 3) = jacobi(1, 3) * mParticles[1].mVelocity[0];
+	//jacobiPrime(1, 4) = jacobi(1, 4) * mParticles[1].mVelocity[1];
+	//jacobiPrime(1, 5) = jacobi(1, 5) * mParticles[1].mVelocity[2];
+
+	jacobiPrime(1, 3) = mParticles[1].mVelocity[0] - mParticles[0].mVelocity[0];
+	jacobiPrime(1, 4) = mParticles[1].mVelocity[1] - mParticles[0].mVelocity[1];
+	jacobiPrime(1, 5) = mParticles[1].mVelocity[2] - mParticles[0].mVelocity[2];
 
 	Eigen::MatrixXd jacobiT = jacobi.transpose();
 
