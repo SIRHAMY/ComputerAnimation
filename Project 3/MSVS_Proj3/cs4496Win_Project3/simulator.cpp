@@ -72,6 +72,8 @@ void Simulator::particleSim() {
 	Eigen::MatrixXd W(3 * mParticles.size(), 3 * mParticles.size());
 
 	qDot.setZero();
+	Q.setZero();
+	W.setZero();
 
 	for (int p = 0; p < mParticles.size(); p++) {
 		//Velocity Setting
@@ -92,9 +94,37 @@ void Simulator::particleSim() {
 	Eigen::MatrixXd jacobi(2, 3 * mParticles.size());
 	Eigen::MatrixXd jacobiPrime(2, 3 * mParticles.size());
 
+	Lambda.setZero();
+	jacobi.setZero();
+	jacobiPrime.setZero();
+
 	//Set first constraint
-	for (int i = 0; i < 3; i++) jacobi(i, 0) = mParticles[0].mPosition[0]
+	for (int i = 0; i < 3; i++) {
+		jacobi(0, i) = mParticles[0].mPosition[i]; //Believe Jacobian is derivative wrt particlePos - C1 = x
+		jacobiPrime(0, i) = mParticles[0].mVelocity[i];
+	}
+
+	//C2 Constraint
+
+	//P1 - P2
+	jacobi(1, 0) = mParticles[0].mPosition[0] - mParticles[1].mPosition[0]; 
+	jacobi(1, 1) = mParticles[0].mPosition[1] - mParticles[1].mPosition[1];
+	jacobi(1, 2) = mParticles[0].mPosition[2] - mParticles[1].mPosition[2];
+
+	jacobiPrime(1, 0) = jacobi(1, 0) * mParticles[0].mVelocity[0];
+	jacobiPrime(1, 1) = jacobi(1, 1) * mParticles[0].mVelocity[1];
+	jacobiPrime(1, 2) = jacobi(1, 2) * mParticles[0].mVelocity[2];
+
+	//P2 - P1
+	jacobi(1, 3) = mParticles[1].mPosition[0] - mParticles[0].mPosition[0];
+	jacobi(1, 4) = mParticles[1].mPosition[1] - mParticles[0].mPosition[1];
+	jacobi(1, 5) = mParticles[1].mPosition[2] - mParticles[0].mPosition[2];
 	
+	jacobiPrime(1, 3) = jacobi(1, 3) * mParticles[1].mVelocity[0];
+	jacobiPrime(1, 4) = jacobi(1, 4) * mParticles[1].mVelocity[1];
+	jacobiPrime(1, 5) = jacobi(1, 5) * mParticles[1].mVelocity[2];
+}
+}
 }
 
 void Simulator::simulate() {
