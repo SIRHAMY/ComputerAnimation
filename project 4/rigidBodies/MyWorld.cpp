@@ -1,4 +1,4 @@
-#include "MyWorld.h"
+    #include "MyWorld.h"
 #include "RigidBody.h"
 #include "CollisionInterface.h"
 #include <iostream>
@@ -8,7 +8,7 @@ using namespace std;
 
 MyWorld::MyWorld() {
     mFrame = 0;
-    mTimeStep = 0.001;
+    mTimeStep = 0.001;      
     mGravity = Vector3d(0.0, -9.8, 0.0);
     mForce.setZero();
     // Create a collision detector
@@ -72,9 +72,27 @@ void MyWorld::simulate() {
         Eigen::Vector3d dPos = mRigidBodies[i]->mLinMomentum / mRigidBodies[i]->mMass;
         Eigen::Vector3d dLinMom = mRigidBodies[i]->mMass * mGravity + mRigidBodies[i]->mAccumulatedForce;
         
+        //Convert quaternion to rotation matrix
+        mRigidBodies[i] -> mOrientation = mRigidBodies[i] -> mQuatOrient.toRotationMatrix();
+        //std::cout << "Rotation: " <<    mRigidBodies[i] -> mOrientation << std::endl; 
+        //std::cout << "mShape: " << mRigidBodies[i]->mShape << endl;
+        std::cout << "iBody: " << i << " -> " << mRigidBodies[i]->iBody << endl;
+
+        //    I(t) = R(t) * Ibody * transpose(R(t))
+        //Eigen::Vector3d myI = mRigidBodies[i]->mOrientation * mRigidBodies[i]->mShape;
+
+        //Integration of orientation
+        //Eigen::Vector3d omega = 
+
+        //Integration of angular momentum
+
         // update position and linear momentum
         mRigidBodies[i]->mPosition += dPos * mTimeStep;
         mRigidBodies[i]->mLinMomentum += mTimeStep * dLinMom;
+
+        //Update orientation
+
+        //Update angular momentum
     }
     
     // Reset accumulated force and torque to be zero after a complete integration

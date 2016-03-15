@@ -17,8 +17,14 @@ class RigidBody {
         
         if (_type == dart::dynamics::Shape::BOX) {
             mShape = Eigen::make_aligned_shared<dart::dynamics::BoxShape>(_dim);
+            iBody << mMass*(std::pow(_dim(0), 2.0) + std::pow(_dim(2), 2.0)) / 12.0, 0, 0,
+                     0, mMass*(std::pow(_dim(2), 2.0) + std::pow(_dim(1), 2.0)) / 12.0, 0,
+                     0, 0, mMass*(std::pow(_dim(0), 2.0) + std::pow(_dim(1), 2.0)) / 12.0;
         } else if (_type == dart::dynamics::Shape::ELLIPSOID) {
             mShape = Eigen::make_aligned_shared<dart::dynamics::EllipsoidShape>(_dim);
+            iBody << 0, 0, 0,
+                     0, 0, 0,
+                     0, 0, 0;
         }
         
         mLinMomentum.setZero();
@@ -26,6 +32,9 @@ class RigidBody {
         
         mAccumulatedForce.setZero();
         mAccumulatedTorque.setZero();
+
+        //Going to initialize iBody here using the _dim param
+        //std::cout << "_dim: " << _dim << std::endl;
     }
     virtual ~RigidBody() {}
 
@@ -36,6 +45,8 @@ class RigidBody {
     }
     
     double mMass;
+
+    Eigen::Matrix3d iBody; //Want to store the Ibody here
 
 	Eigen::Vector3d mPosition;
     Eigen::Quaterniond mQuatOrient; // quaternion

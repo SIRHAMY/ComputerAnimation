@@ -144,6 +144,7 @@ void MyWindow::keyboard(unsigned char key, int x, int y)
     
   case '1': // Hit the pinata from the left
     mWorld->setExtForce(0, 500.0);
+    std::cout << "Hit it from the left" << std::endl;
     break;
 
   case '2': // Hit the pinata from the right
