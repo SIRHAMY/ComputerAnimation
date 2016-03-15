@@ -153,7 +153,7 @@ void Simulator::particleSim() {
 	dampingCPrime(1, 0) = (mParticles[1].mVelocity - mParticles[0].mVelocity).norm();
 	dampingCPrime *= kd;
 
-	Eigen::MatrixXd secNum = -1.0 * jacobiPrime * qDot - jacobi * W * Q - dampingC - dampingCPrime;
+	Eigen::MatrixXd secNum = -1.0 * jacobiPrime * qDot - jacobi * W * Q;
 
 	//std::cout << "DEBUG: secNum R, C" << secNum.rows() << ", " << secNum.cols() << endl;
 
