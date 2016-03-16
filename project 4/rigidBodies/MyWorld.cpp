@@ -74,12 +74,29 @@ void MyWorld::simulate() {
         
         //Convert quaternion to rotation matrix
         mRigidBodies[i] -> mOrientation = mRigidBodies[i] -> mQuatOrient.toRotationMatrix();
+        
+        //HAMYChange - Debug
         //std::cout << "Rotation: " <<    mRigidBodies[i] -> mOrientation << std::endl; 
         //std::cout << "mShape: " << mRigidBodies[i]->mShape << endl;
         std::cout << "iBody: " << i << " -> " << mRigidBodies[i]->iBody << endl;
 
         //    I(t) = R(t) * Ibody * transpose(R(t))
-        //Eigen::Vector3d myI = mRigidBodies[i]->mOrientation * mRigidBodies[i]->mShape;
+
+        Eigen::Matrix3d mOrientTrans = mRigidBodies[i]->mOrientation.transpose();
+
+        //std::cout << "Debug: " << "rigidBody: " << i << ", OrientationTranspose = " << mOrientTrans << std::endl;
+
+        //Check to make sure vectors are same size
+        std::cout << "Size Debug: " << "mOrientation - " << "Rows = " << mRigidBodies[i]->mOrientation.rows()
+                    << ", Cols = " << mRigidBodies[i]->mOrientation.cols() << std::endl;
+        std::cout << "Size Debug: " << "mOrientTrans - " << "Rows = " << mOrientTrans.rows()
+                    << ", Cols = " << mOrientTrans.cols() << std::endl;
+        std::cout << "Size Debug: " << "iBody - " << "Rows = " << mRigidBodies[i]->iBody.rows() 
+                    << ", Cols = " << mRigidBodies[i]->iBody.cols() << std::endl;
+
+        Eigen::Matrix3d myI = mRigidBodies[i]->mOrientation * mRigidBodies[i]->iBody * mOrientTrans;
+
+        std::cout << "Debug: " << "I(t) = " << myI << std::endl;
 
         //Integration of orientation
         //Eigen::Vector3d omega = 
