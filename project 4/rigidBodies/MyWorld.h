@@ -53,6 +53,8 @@ class MyWorld {
 	void setExtForce(int _dir, double _mag) {
 		mForce[_dir] = _mag;
 	}
+
+	Eigen::Quaterniond quatMult(Eigen::Quaterniond q1, Eigen::Quaterniond q2);
   
  protected:
 	int mFrame;

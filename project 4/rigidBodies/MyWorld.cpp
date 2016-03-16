@@ -62,6 +62,10 @@ MyWorld::~MyWorld() {
     delete mCollisionDetector;
 }
 
+Eigen::Quaterniond MyWorld::quatMult(Eigen::Quaterniond q1, Eigen::Quaterniond q2) {
+
+}
+
 void MyWorld::simulate() {
     mFrame++;
     
@@ -102,16 +106,17 @@ void MyWorld::simulate() {
 
         //Omega = w(t) = I(t)^-1 * L(t)
         Eigen::Vector3d omega = myI.inverse() * mRigidBodies[i]->mAngMomentum;
+        std::cout << "Debug: " << "omega = " << omega << std::endl;
 
         //Think I can add the half multiplication here
-        Eigen::Quaterniond omega2 = Eigen::Quaterniond(0, 0.5 * omega(0), 0.5 * omega(1), 0.5 * omega(2));
-        /*omega2(0) = 0;
-        omega2(1) = omega(0);
-        omega2(2) = omega(1);
-        omega2(3) = omega(2);*/
-        // << 0, omega(0), omega(1), omega(2);
+        Eigen::Quaterniond omega2 = Eigen::Quaterniond(0, omega(0), omega(1), omega(2));
+        //std::cout << "Debug: Before 0.5 - " << "omega2.w() = " << omega2.w() << std::endl;
+        //std::cout << "Debug: Before 0.5 - " << "omega2.vec() = " << omega2.vec() << std::endl;
 
-        std::cout << "Debug: " << "omega = " << omega << std::endl;
+        omega2.w() *= 0.5;
+        omega2.vec() *= 0.5;
+        //std::cout << "Debug: AFter 0.5 - " << "omega2.w() = " << omega2.w() << std::endl;
+        //std::cout << "Debug: After 0.5 - " << "omega2.vec() = " << omega2.vec() << std::endl;
 
         /*
         //Check dQuat sizes
@@ -136,7 +141,8 @@ void MyWorld::simulate() {
         //HAMYChange - Looks fishy
         //Update orientation
 
-        Eigen::Vector3d qNew = mRigidBodies[i]->mQuatOrient + mTimeStep * dQuat;
+        //TODO: Finish Quaternion code
+        //Eigen::Vector3d qNew = mRigidBodies[i]->mQuatOrient + mTimeStep * dQuat;
 
         //dQuat.w() *= mTimeStep;
         //mRigidBodies[i]->mQuatOrient += dQuat;
