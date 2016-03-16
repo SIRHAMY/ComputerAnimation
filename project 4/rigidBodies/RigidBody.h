@@ -22,9 +22,11 @@ class RigidBody {
                      0, 0, mMass*(std::pow(_dim(0), 2.0) + std::pow(_dim(1), 2.0)) / 12.0;
         } else if (_type == dart::dynamics::Shape::ELLIPSOID) {
             mShape = Eigen::make_aligned_shared<dart::dynamics::EllipsoidShape>(_dim);
-            iBody << 0, 0, 0,
-                     0, 0, 0,
-                     0, 0, 0;
+            
+            double sphereIBody = (2.0 / 5.0) * mMass * std::pow(_dim(0), 2.0);
+            iBody << sphereIBody, 0, 0,
+                     0, sphereIBody, 0,
+                     0, 0, sphereIBody;
         }
         
         mLinMomentum.setZero();
