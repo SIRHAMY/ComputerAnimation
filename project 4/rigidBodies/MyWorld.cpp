@@ -63,7 +63,13 @@ MyWorld::~MyWorld() {
 }
 
 Eigen::Quaterniond MyWorld::quatMult(Eigen::Quaterniond q1, Eigen::Quaterniond q2) {
+    Eigen::Quaterniond resultQ;
+    resultQ.setIdentity();
 
+    resultQ.w() = q1.w() * q2.w() - q1.vec().dot(q2.vec());
+    resultQ.vec() = q1.w() * q2.vec() + q2.w() * q1.vec() + q1.vec().cross(q2.vec());
+
+    return resultQ;
 }
 
 void MyWorld::simulate() {
@@ -127,8 +133,9 @@ void MyWorld::simulate() {
         */
 
         //dQuat
-        Eigen::Quaterniond dQuat = omega2 * mRigidBodies[i]->mQuatOrient;
-        //std::cout << "Debug: " << "dQuat = " << dQuat << std::endl;
+        Eigen::Quaterniond dQuat = quatMult(omega2, mRigidBodies[i]->mQuatOrient);
+        std::cout << "Debug: " << "dQuat.w() = " << dQuat.w() << std::endl;
+        std::cout << "Debug: " << "dQuat.vec() = " << dQuat.vec() << std::endl;
 
         //****Integration of angular momentum****
         //Eigen::Vector3d andMomentum = myI * omega;
