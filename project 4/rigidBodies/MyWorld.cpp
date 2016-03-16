@@ -72,6 +72,7 @@ void MyWorld::simulate() {
         Eigen::Vector3d dPos = mRigidBodies[i]->mLinMomentum / mRigidBodies[i]->mMass;
         Eigen::Vector3d dLinMom = mRigidBodies[i]->mMass * mGravity + mRigidBodies[i]->mAccumulatedForce;
         
+        //****Integration of Orientation****
         //Convert quaternion to rotation matrix
         mRigidBodies[i] -> mOrientation = mRigidBodies[i] -> mQuatOrient.toRotationMatrix();
         
@@ -124,18 +125,24 @@ void MyWorld::simulate() {
         Eigen::Quaterniond dQuat = omega2 * mRigidBodies[i]->mQuatOrient;
         //std::cout << "Debug: " << "dQuat = " << dQuat << std::endl;
 
-        //Integration of orientation
-        //Eigen::Vector3d omega = 
-
-        //Integration of angular momentum
+        //****Integration of angular momentum****
+        //Eigen::Vector3d andMomentum = myI * omega;
+        Eigen::Vector3d dAngMoment = mRigidBodies[i]->mAccumulatedTorque;
 
         // update position and linear momentum
         mRigidBodies[i]->mPosition += dPos * mTimeStep;
         mRigidBodies[i]->mLinMomentum += mTimeStep * dLinMom;
 
+        //HAMYChange - Looks fishy
         //Update orientation
 
+        Eigen::Vector3d qNew = mRigidBodies[i]->mQuatOrient + mTimeStep * dQuat;
+
+        //dQuat.w() *= mTimeStep;
+        //mRigidBodies[i]->mQuatOrient += dQuat;
+
         //Update angular momentum
+        mRigidBodies[i]->mAngMomentum += dAngMoment * mTimeStep;
     }
     
     // Reset accumulated force and torque to be zero after a complete integration
