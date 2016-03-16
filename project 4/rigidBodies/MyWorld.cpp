@@ -78,14 +78,14 @@ void MyWorld::simulate() {
         //HAMYChange - Debug
         //std::cout << "Rotation: " <<    mRigidBodies[i] -> mOrientation << std::endl; 
         //std::cout << "mShape: " << mRigidBodies[i]->mShape << endl;
-        std::cout << "iBody: " << i << " -> " << mRigidBodies[i]->iBody << endl;
+        //std::cout << "iBody: " << i << " -> " << mRigidBodies[i]->iBody << endl;
 
         //    I(t) = R(t) * Ibody * transpose(R(t))
-
         Eigen::Matrix3d mOrientTrans = mRigidBodies[i]->mOrientation.transpose();
 
         //std::cout << "Debug: " << "rigidBody: " << i << ", OrientationTranspose = " << mOrientTrans << std::endl;
 
+        /*
         //Check to make sure vectors are same size
         std::cout << "Size Debug: " << "mOrientation - " << "Rows = " << mRigidBodies[i]->mOrientation.rows()
                     << ", Cols = " << mRigidBodies[i]->mOrientation.cols() << std::endl;
@@ -93,10 +93,36 @@ void MyWorld::simulate() {
                     << ", Cols = " << mOrientTrans.cols() << std::endl;
         std::cout << "Size Debug: " << "iBody - " << "Rows = " << mRigidBodies[i]->iBody.rows() 
                     << ", Cols = " << mRigidBodies[i]->iBody.cols() << std::endl;
+        */
 
         Eigen::Matrix3d myI = mRigidBodies[i]->mOrientation * mRigidBodies[i]->iBody * mOrientTrans;
 
         std::cout << "Debug: " << "I(t) = " << myI << std::endl;
+
+        //Omega = w(t) = I(t)^-1 * L(t)
+        Eigen::Vector3d omega = myI.inverse() * mRigidBodies[i]->mAngMomentum;
+
+        //Think I can add the half multiplication here
+        Eigen::Quaterniond omega2 = Eigen::Quaterniond(0, 0.5 * omega(0), 0.5 * omega(1), 0.5 * omega(2));
+        /*omega2(0) = 0;
+        omega2(1) = omega(0);
+        omega2(2) = omega(1);
+        omega2(3) = omega(2);*/
+        // << 0, omega(0), omega(1), omega(2);
+
+        std::cout << "Debug: " << "omega = " << omega << std::endl;
+
+        /*
+        //Check dQuat sizes
+        std::cout << "Size Debug: " << "mQuatOrient - " << "Size = " << mRigidBodies[i]->mQuatOrient.size()
+                  << std::endl;
+        std::cout << "Size Debug: " << "omega - " << "Rows = " << omega.rows()
+                    << ", Cols = " << omega.cols() << std::endl;
+        */
+
+        //dQuat
+        Eigen::Quaterniond dQuat = omega2 * mRigidBodies[i]->mQuatOrient;
+        //std::cout << "Debug: " << "dQuat = " << dQuat << std::endl;
 
         //Integration of orientation
         //Eigen::Vector3d omega = 
