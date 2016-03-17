@@ -145,14 +145,15 @@ void MyWorld::simulate() {
         mRigidBodies[i]->mPosition += dPos * mTimeStep;
         mRigidBodies[i]->mLinMomentum += mTimeStep * dLinMom;
 
-        //HAMYChange - Looks fishy
-        //Update orientation
+        //****Update orientation****
+        dQuat.w() *= mTimeStep;
+        dQuat.vec() *= mTimeStep;
 
-        //TODO: Finish Quaternion code
-        //Eigen::Vector3d qNew = mRigidBodies[i]->mQuatOrient + mTimeStep * dQuat;
+        Eigen::Quaterniond qNew;
+        qNew.w() = dQuat.w() + mRigidBodies[i]->mQuatOrient.w();
+        qNew.vec() = dQuat.vec() + mRigidBodies[i]->mQuatOrient.vec();
 
-        //dQuat.w() *= mTimeStep;
-        //mRigidBodies[i]->mQuatOrient += dQuat;
+        mRigidBodies[i]->mQuatOrient = qNew;
 
         //Update angular momentum
         mRigidBodies[i]->mAngMomentum += dAngMoment * mTimeStep;
