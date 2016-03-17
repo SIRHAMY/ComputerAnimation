@@ -82,64 +82,31 @@ void MyWorld::simulate() {
         Eigen::Vector3d dPos = mRigidBodies[i]->mLinMomentum / mRigidBodies[i]->mMass;
         Eigen::Vector3d dLinMom = mRigidBodies[i]->mMass * mGravity + mRigidBodies[i]->mAccumulatedForce;
         
+        //****Integration of angular momentum****
+        Eigen::Vector3d dAngMoment = mRigidBodies[i]->mAccumulatedTorque;
+
         //****Integration of Orientation****
         //Convert quaternion to rotation matrix
         mRigidBodies[i] -> mOrientation = mRigidBodies[i] -> mQuatOrient.toRotationMatrix();
         
-        //HAMYChange - Debug
-        //std::cout << "Rotation: " <<    mRigidBodies[i] -> mOrientation << std::endl; 
-        //std::cout << "mShape: " << mRigidBodies[i]->mShape << endl;
-        //std::cout << "iBody: " << i << " -> " << mRigidBodies[i]->iBody << endl;
-
         //    I(t) = R(t) * Ibody * transpose(R(t))
         Eigen::Matrix3d mOrientTrans = mRigidBodies[i]->mOrientation.transpose();
-
-        //std::cout << "Debug: " << "rigidBody: " << i << ", OrientationTranspose = " << mOrientTrans << std::endl;
-
-        /*
-        //Check to make sure vectors are same size
-        std::cout << "Size Debug: " << "mOrientation - " << "Rows = " << mRigidBodies[i]->mOrientation.rows()
-                    << ", Cols = " << mRigidBodies[i]->mOrientation.cols() << std::endl;
-        std::cout << "Size Debug: " << "mOrientTrans - " << "Rows = " << mOrientTrans.rows()
-                    << ", Cols = " << mOrientTrans.cols() << std::endl;
-        std::cout << "Size Debug: " << "iBody - " << "Rows = " << mRigidBodies[i]->iBody.rows() 
-                    << ", Cols = " << mRigidBodies[i]->iBody.cols() << std::endl;
-        */
-
         Eigen::Matrix3d myI = mRigidBodies[i]->mOrientation * mRigidBodies[i]->iBody * mOrientTrans;
-
         std::cout << "Debug: " << "I(t) = " << myI << std::endl;
 
         //Omega = w(t) = I(t)^-1 * L(t)
         Eigen::Vector3d omega = myI.inverse() * mRigidBodies[i]->mAngMomentum;
         std::cout << "Debug: " << "omega = " << omega << std::endl;
 
-        //Think I can add the half multiplication here
+        // dQuat = 1/2 * quat(omega) * mQuatOrientation
         Eigen::Quaterniond omega2 = Eigen::Quaterniond(0, omega(0), omega(1), omega(2));
-        //std::cout << "Debug: Before 0.5 - " << "omega2.w() = " << omega2.w() << std::endl;
-        //std::cout << "Debug: Before 0.5 - " << "omega2.vec() = " << omega2.vec() << std::endl;
-
         omega2.w() *= 0.5;
         omega2.vec() *= 0.5;
-        //std::cout << "Debug: AFter 0.5 - " << "omega2.w() = " << omega2.w() << std::endl;
-        //std::cout << "Debug: After 0.5 - " << "omega2.vec() = " << omega2.vec() << std::endl;
-
-        /*
-        //Check dQuat sizes
-        std::cout << "Size Debug: " << "mQuatOrient - " << "Size = " << mRigidBodies[i]->mQuatOrient.size()
-                  << std::endl;
-        std::cout << "Size Debug: " << "omega - " << "Rows = " << omega.rows()
-                    << ", Cols = " << omega.cols() << std::endl;
-        */
 
         //dQuat
         Eigen::Quaterniond dQuat = quatMult(omega2, mRigidBodies[i]->mQuatOrient);
         std::cout << "Debug: " << "dQuat.w() = " << dQuat.w() << std::endl;
         std::cout << "Debug: " << "dQuat.vec() = " << dQuat.vec() << std::endl;
-
-        //****Integration of angular momentum****
-        //Eigen::Vector3d andMomentum = myI * omega;
-        Eigen::Vector3d dAngMoment = mRigidBodies[i]->mAccumulatedTorque;
 
         // update position and linear momentum
         mRigidBodies[i]->mPosition += dPos * mTimeStep;
