@@ -158,6 +158,11 @@ void MyWorld::collisionHandling() {
     // TODO: handle the collision events
 }
 
+Eigen::Vector3d MyWorld::getLittleJ(RigidBody rA, RigidBody rB, Eigen::Vector3d normal, 
+    double epsilon) {
+    //TODO: Check if one of the rigid bodies is null -> pinata
+}
+
 
 
 
