@@ -60,6 +60,7 @@ class MyWorld {
   		Eigen::Vector3d normal, Eigen::Vector3d collisionPt, double epsilon);
   	double getLittleJPinataB(RigidBody rigidA, Eigen::Vector3d pinataVelocity,
   		Eigen::Vector3d normal, Eigen::Vector3d collisionPt, double epsilon);
+  	bool makeCandy();
 
  protected:
 	int mFrame;

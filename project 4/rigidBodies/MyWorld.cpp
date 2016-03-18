@@ -32,6 +32,47 @@ MyWorld::MyWorld() {
     mRigidBodies.push_back(rb2);
 }
 
+//Add more candy to the world
+bool MyWorld::makeCandy() {
+    RigidBody *newCandy = new RigidBody(dart::dynamics::Shape::BOX, Vector3d(0.05, 0.05, 0.05));
+    mCollisionDetector->addRigidBody(newCandy, "box");
+    newCandy->mAngMomentum = Vector3d(0.01, 0, 0);
+    
+    double color = (double) rand() / (double) RAND_MAX;
+    newCandy->mColor = Vector4d(color, color, color, color);
+
+    bool collisionFound = true;
+    while(collisionFound) {
+        //double x = (0 - -0.5) * ( (double) rand() / (double) RAND_MAX) + -1;
+        //double y = (0.5 - 0) * ( (double) rand() / (double) RAND_MAX) + -1;
+        double x = 0.3;
+        double y = -0.5;
+
+        newCandy->mPosition[0] = x;
+        newCandy->mPosition[1] = y;
+
+        collisionFound = false;
+
+        //Check for collisions
+        mCollisionDetector->checkCollision();
+
+         // Iterates through collisions
+        int nContacts = mCollisionDetector->getNumContacts();
+        for(int collision = 0; collision<nContacts; collision++) {
+            //HAMYChange - Really not sure if these pointers are right
+            if( newCandy == mCollisionDetector->getContact(collision).rb1 ||
+                newCandy == mCollisionDetector->getContact(collision).rb2) {
+                collisionFound = true;
+                break;
+            }
+        }
+    }
+
+     mRigidBodies.push_back(newCandy);
+     std::cout << "Created candy successfully" << std::endl;
+     return true;
+}
+
 void MyWorld::initializePinata() {
     // Add pinata to the collison detector
     mCollisionDetector->addSkeleton(mPinataWorld->getSkeleton(0));

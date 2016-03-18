@@ -158,6 +158,9 @@ void MyWindow::keyboard(unsigned char key, int x, int y)
   case '4': // Hit the pinata from the back
     mWorld->setExtForce(2, 500.0);
     break;
+  case 'a':
+    mWorld->makeCandy();
+    break;
 
   // case 'b': // Break the pinata
   //   mWorld->getPinataWorld()->getConstraintSolver()->removeAllConstraints();
