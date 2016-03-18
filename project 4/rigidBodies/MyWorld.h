@@ -58,6 +58,8 @@ class MyWorld {
   	double getLittleJ(RigidBody rA, RigidBody rB, Eigen::Vector3d normal, Eigen::Vector3d collisionPt, double epsilon);
   	double getLittleJPinata(RigidBody rigidA, Eigen::Vector3d pinataVelocity,
   		Eigen::Vector3d normal, Eigen::Vector3d collisionPt, double epsilon);
+  	double getLittleJPinataB(RigidBody rigidA, Eigen::Vector3d pinataVelocity,
+  		Eigen::Vector3d normal, Eigen::Vector3d collisionPt, double epsilon);
 
  protected:
 	int mFrame;
