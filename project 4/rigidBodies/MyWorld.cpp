@@ -92,11 +92,11 @@ void MyWorld::simulate() {
         //    I(t) = R(t) * Ibody * transpose(R(t))
         Eigen::Matrix3d mOrientTrans = mRigidBodies[i]->mOrientation.transpose();
         Eigen::Matrix3d myI = mRigidBodies[i]->mOrientation * mRigidBodies[i]->iBody * mOrientTrans;
-        std::cout << "Debug: " << "I(t) = " << myI << std::endl;
+        //std::cout << "Debug: " << "I(t) = " << myI << std::endl;
 
         //Omega = w(t) = I(t)^-1 * L(t)
         Eigen::Vector3d omega = myI.inverse() * mRigidBodies[i]->mAngMomentum;
-        std::cout << "Debug: " << "omega = " << omega << std::endl;
+        //std::cout << "Debug: " << "omega = " << omega << std::endl;
 
         // dQuat = 1/2 * quat(omega) * mQuatOrientation
         Eigen::Quaterniond omega2 = Eigen::Quaterniond(0, omega(0), omega(1), omega(2));
@@ -105,8 +105,8 @@ void MyWorld::simulate() {
 
         //dQuat
         Eigen::Quaterniond dQuat = quatMult(omega2, mRigidBodies[i]->mQuatOrient);
-        std::cout << "Debug: " << "dQuat.w() = " << dQuat.w() << std::endl;
-        std::cout << "Debug: " << "dQuat.vec() = " << dQuat.vec() << std::endl;
+        //std::cout << "Debug: " << "dQuat.w() = " << dQuat.w() << std::endl;
+        //std::cout << "Debug: " << "dQuat.vec() = " << dQuat.vec() << std::endl;
 
         // update position and linear momentum
         mRigidBodies[i]->mPosition += dPos * mTimeStep;
@@ -121,6 +121,7 @@ void MyWorld::simulate() {
         qNew.vec() = dQuat.vec() + mRigidBodies[i]->mQuatOrient.vec();
 
         mRigidBodies[i]->mQuatOrient = qNew;
+        mRigidBodies[i]->mQuatOrient.normalize();
 
         //Update angular momentum
         mRigidBodies[i]->mAngMomentum += dAngMoment * mTimeStep;
@@ -167,6 +168,9 @@ void MyWorld::collisionHandling() {
 
         Eigen::Vector3d vPinata = mCollisionDetector->getContact(collision).pinataVelocity;
 
+        std::cout << "Debug: " << "Collision=" << collision << std::endl;
+
+
         double littleJ = 0;
         //TODO: How to tell if obj pointing at is null?
         if(rb1 != NULL && rb2 != NULL) {
@@ -199,6 +203,8 @@ void MyWorld::collisionHandling() {
 
             rb2->mAccumulatedForce += bigJB;
             rb2->mAccumulatedTorque += rB.cross(bigJB);
+
+            std::cout << "Debug: " << "littleJ=" << littleJ << std::endl;
         } else if (rb1 != NULL) {
             //rb2 is Pinata
             littleJ = getLittleJPinata(*rb1, vPinata, normal, collisionPt, epsilon);
@@ -209,6 +215,8 @@ void MyWorld::collisionHandling() {
 
             rb1->mAccumulatedForce += bigJA;
             rb1->mAccumulatedTorque += rA.cross(bigJA);
+
+            std::cout << "Debug: " << "littleJ=" << littleJ << std::endl;
         } else {
             //Someone done goofed
             std::cout << "Error: Neither rigid body is defined in collision handling" <<std::endl;
@@ -235,12 +243,13 @@ double MyWorld::getLittleJPinata(RigidBody rigidA, Eigen::Vector3d pinataVelocit
     //**Calculate dotPA
     Eigen::Matrix3d iA = rigidA.mOrientation * rigidA.iBody * rigidA.mOrientation.transpose();
     Eigen::Vector3d omegaA = iA.inverse() * rigidA.mAngMomentum;
-    Eigen::Vector3d dotPA = rigidA.mLinMomentum / rigidA.mMass + omegaA.cross(rigidA.mPosition);
+    Eigen::Vector3d dotPA = rigidA.mLinMomentum / rigidA.mMass + omegaA.cross(rigidA.mPosition)
+        + mGravity * mTimeStep;
 
     //**Calculate dotPP
     //Goes to zero so collisions don't affect it
 
-    double vr = normal.dot(dotPA);
+    double vR = normal.dot(dotPA);
 
     //****littleJDenominator****
     Eigen::Vector3d rA = collisionPt - rigidA.mPosition;
@@ -248,7 +257,9 @@ double MyWorld::getLittleJPinata(RigidBody rigidA, Eigen::Vector3d pinataVelocit
     double littleJDenom = 1/rigidA.mMass;
     littleJDenom += normal.dot( ( iA.inverse() * ( rA.cross(normal) ) ).cross(rA) ); 
 
-    return littleJDenom;
+    littleJ = -(1.0 + epsilon) * vR / littleJDenom;
+
+    return littleJ;
 }
 
 double MyWorld::getLittleJ(RigidBody rigidA, RigidBody rigidB, Eigen::Vector3d normal, 
@@ -261,12 +272,14 @@ double MyWorld::getLittleJ(RigidBody rigidA, RigidBody rigidB, Eigen::Vector3d n
     //**Calculate dotPA
     Eigen::Matrix3d iA = rigidA.mOrientation * rigidA.iBody * rigidA.mOrientation.transpose();
     Eigen::Vector3d omegaA = iA.inverse() * rigidA.mAngMomentum;
-    Eigen::Vector3d dotPA = rigidA.mLinMomentum / rigidA.mMass + omegaA.cross(rigidA.mPosition);
+    Eigen::Vector3d dotPA = rigidA.mLinMomentum / rigidA.mMass + omegaA.cross(rigidA.mPosition)
+        + mGravity * mTimeStep;
 
     //**Calculate dotPB
     Eigen::Matrix3d iB = rigidB.mOrientation * rigidB.iBody * rigidB.mOrientation.transpose();
     Eigen::Vector3d omegaB = iB.inverse() * rigidB.mAngMomentum;
-    Eigen::Vector3d dotPB = rigidB.mLinMomentum / rigidB.mMass + omegaB.cross(rigidB.mPosition);
+    Eigen::Vector3d dotPB = rigidB.mLinMomentum / rigidB.mMass + omegaB.cross(rigidB.mPosition)
+        + mGravity * mTimeStep;
 
     double vR = normal.dot( (dotPA - dotPB) );
 
@@ -278,7 +291,7 @@ double MyWorld::getLittleJ(RigidBody rigidA, RigidBody rigidB, Eigen::Vector3d n
     littleJDenom += normal.dot( ( iA.transpose() * ( rA.cross(normal) ) ).cross(rA) );
     littleJDenom += normal.dot( ( iB.transpose() * ( rB.cross(normal) ) ).cross(rB) );
 
-    littleJ = -(1 + epsilon) * vR / littleJDenom;
+    littleJ = -(1.0 + epsilon) * vR / littleJDenom;
 
     return littleJ;
 }
