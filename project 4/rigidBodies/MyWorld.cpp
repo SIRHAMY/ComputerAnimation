@@ -175,13 +175,19 @@ Eigen::Vector3d MyWorld::getLittleJ(RigidBody rA, RigidBody rB, Eigen::Vector3d 
     Eigen::Vector3d littleJ;
     littleJ.setZero();
 
-    //****Calculate Vr-pre****
+    //****Calculate vR-pre****
 
     //**Calculate dotPA
     Eigen::Matrix3d iA = rA.mOrientation * rA.iBody * rA.mOrientation.transpose();
-    Eigen::Vector3d omegaA;
-
+    Eigen::Vector3d omegaA = iA.inverse() * rA.mAngMomentum;
     Eigen::Vector3d dotPA = rA.mLinMomentum / rA.mMass + omegaA.cross(rA.mPosition);
+
+    //**Calculate dotPB
+    Eigen::Matrix3d iB = rB.mOrientation * rB.iBody * rB.mOrientation.transpose();
+    Eigen::Vector3d omegaB = iB.inverse() * rB.mAngMomentum;
+    Eigen::Vector3d dotPB = rB.mLinMomentum / rB.mMass + omegaB.cross(rB.mPosition);
+
+    double vR = normal.dot( (dotPA - dotPB) );
 
     return littleJ;
 }
