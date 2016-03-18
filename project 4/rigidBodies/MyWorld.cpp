@@ -165,15 +165,50 @@ void MyWorld::collisionHandling() {
         Eigen::Vector3d normal = mCollisionDetector->getContact(collision).normal;
         Eigen::Vector3d collisionPt = mCollisionDetector->getContact(collision).point;
 
+        Eigen::Vector3d vPinata = mCollisionDetector->getContact(collision).pinataVelocity;
+
         double littleJ = 0;
         //TODO: How to tell if obj pointing at is null?
         if(rb1 != NULL && rb2 != NULL) {
             //For cases when rigid on rigid, not pinata
             littleJ = getLittleJ(*rb1, *rb2, normal, collisionPt, epsilon);
-        } else if (rb2 != null) {
+
+            //****Update mAccumulatedForce and mAccumulatedTorque****
+            
+            //**Update particle A**
+            Eigen::Vector3d rA = collisionPt - rb1->mPosition;
+            Eigen::Vector3d bigJA = littleJ * normal;
+
+            rb1->mAccumulatedForce += bigJA;
+            rb1->mAccumulatedTorque += rA.cross(bigJA);
+
+            //**Update particle B**
+            Eigen::Vector3d rB = collisionPt - rb2->mPosition;
+            Eigen::Vector3d bigJB = -littleJ * normal;
+
+            rb2->mAccumulatedForce += bigJB;
+            rb2->mAccumulatedTorque += rB.cross(bigJB);
+
+        } else if (rb2 != NULL) {
             //rb1 is Pinata
-        } else if (rb1 != null) {
+            littleJ = getLittleJPinata(*rb2, vPinata, normal, collisionPt, epsilon); //Negate because it's the "B" particle
+
+            //**Update particle B**
+            Eigen::Vector3d rB = collisionPt - rb2->mPosition;
+            Eigen::Vector3d bigJB = -littleJ * normal;
+
+            rb2->mAccumulatedForce += bigJB;
+            rb2->mAccumulatedTorque += rB.cross(bigJB);
+        } else if (rb1 != NULL) {
             //rb2 is Pinata
+            littleJ = getLittleJPinata(*rb1, vPinata, normal, collisionPt, epsilon);
+
+            //**Update particle A**
+            Eigen::Vector3d rA = collisionPt - rb1->mPosition;
+            Eigen::Vector3d bigJA = littleJ * normal;
+
+            rb1->mAccumulatedForce += bigJA;
+            rb1->mAccumulatedTorque += rA.cross(bigJA);
         } else {
             //Someone done goofed
             std::cout << "Error: Neither rigid body is defined in collision handling" <<std::endl;
@@ -195,6 +230,25 @@ double MyWorld::getLittleJPinata(RigidBody rigidA, Eigen::Vector3d pinataVelocit
     Eigen::Vector3d normal, Eigen::Vector3d collisionPt, double epsilon){
 
     double littleJ = 0;
+
+    //****Calculate vR****
+    //**Calculate dotPA
+    Eigen::Matrix3d iA = rigidA.mOrientation * rigidA.iBody * rigidA.mOrientation.transpose();
+    Eigen::Vector3d omegaA = iA.inverse() * rigidA.mAngMomentum;
+    Eigen::Vector3d dotPA = rigidA.mLinMomentum / rigidA.mMass + omegaA.cross(rigidA.mPosition);
+
+    //**Calculate dotPP
+    //Goes to zero so collisions don't affect it
+
+    double vr = normal.dot(dotPA);
+
+    //****littleJDenominator****
+    Eigen::Vector3d rA = collisionPt - rigidA.mPosition;
+
+    double littleJDenom = 1/rigidA.mMass;
+    littleJDenom += normal.dot( ( iA.inverse() * ( rA.cross(normal) ) ).cross(rA) ); 
+
+    return littleJDenom;
 }
 
 double MyWorld::getLittleJ(RigidBody rigidA, RigidBody rigidB, Eigen::Vector3d normal, 
