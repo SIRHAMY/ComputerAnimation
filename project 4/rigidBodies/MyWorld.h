@@ -55,7 +55,9 @@ class MyWorld {
 	}
 
 	Eigen::Quaterniond quatMult(Eigen::Quaterniond q1, Eigen::Quaterniond q2);
-  	double getLittleJ(RigidBody rA, RigidBody rB, Eigen::Vector3d normal, double epsilon);
+  	double getLittleJ(RigidBody rA, RigidBody rB, Eigen::Vector3d normal, Eigen::Vector3d collisionPt, double epsilon);
+  	double getLittleJPinata(RigidBody rigidA, Eigen::Vector3d pinataVelocity,
+  		Eigen::Vector3d normal, Eigen::Vector3d collisionPt, double epsilon);
 
  protected:
 	int mFrame;

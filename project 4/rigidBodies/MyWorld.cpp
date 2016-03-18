@@ -155,7 +155,30 @@ void MyWorld::collisionHandling() {
     // restitution coefficient
     double epsilon = 0.8;
     
-    // TODO: handle the collision events
+    // Iterates through collisions
+    int nContacts = mCollisionDetector->getNumContacts();
+    for(int collision = 0; collision<nContacts; collision++) {
+        //HAMYChange - Really not sure if these pointers are right
+        RigidBody* rb1 = mCollisionDetector->getContact(collision).rb1;
+        RigidBody* rb2 = mCollisionDetector->getContact(collision).rb2;
+
+        Eigen::Vector3d normal = mCollisionDetector->getContact(collision).normal;
+        Eigen::Vector3d collisionPt = mCollisionDetector->getContact(collision).point;
+
+        double littleJ = 0;
+        //TODO: How to tell if obj pointing at is null?
+        if(rb1 != NULL && rb2 != NULL) {
+            //For cases when rigid on rigid, not pinata
+            littleJ = getLittleJ(*rb1, *rb2, normal, collisionPt, epsilon);
+        } else if (rb2 != null) {
+            //rb1 is Pinata
+        } else if (rb1 != null) {
+            //rb2 is Pinata
+        } else {
+            //Someone done goofed
+            std::cout << "Error: Neither rigid body is defined in collision handling" <<std::endl;
+        }
+    }
 
     //Update each rigid body's vals
     for(int body = 0; body<mRigidBodies.size(); body++) {
@@ -168,9 +191,14 @@ void MyWorld::collisionHandling() {
     }
 }
 
+double MyWorld::getLittleJPinata(RigidBody rigidA, Eigen::Vector3d pinataVelocity, 
+    Eigen::Vector3d normal, Eigen::Vector3d collisionPt, double epsilon){
+
+    double littleJ = 0;
+}
+
 double MyWorld::getLittleJ(RigidBody rigidA, RigidBody rigidB, Eigen::Vector3d normal, 
-    double epsilon) {
-    //TODO: Check if one of the rigid bodies is null -> pinata
+    Eigen::Vector3d collisionPt, double epsilon) {
 
     double littleJ = 0;
 
@@ -189,11 +217,12 @@ double MyWorld::getLittleJ(RigidBody rigidA, RigidBody rigidB, Eigen::Vector3d n
     double vR = normal.dot( (dotPA - dotPB) );
 
     //****littleJDenominator****
-
+    Eigen::Vector3d rA = collisionPt - rigidA.mPosition;
+    Eigen::Vector3d rB = collisionPt - rigidB.mPosition;
 
     double littleJDenom = 1/rigidA.mMass + 1/rigidB.mMass;
-    littleJDenom += normal.dot( ( iA.transpose() * ( rigidA.mPosition.cross(normal) ) ).cross(rigidA.mPosition) );
-    littleJDenom += normal.dot( ( iB.transpose() * ( rigidB.mPosition.cross(normal) ) ).cross(rigidB.mPosition) );
+    littleJDenom += normal.dot( ( iA.transpose() * ( rA.cross(normal) ) ).cross(rA) );
+    littleJDenom += normal.dot( ( iB.transpose() * ( rB.cross(normal) ) ).cross(rB) );
 
     littleJ = -(1 + epsilon) * vR / littleJDenom;
 
