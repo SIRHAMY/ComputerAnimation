@@ -55,7 +55,8 @@ class MyWorld {
 	}
 
 	Eigen::Quaterniond quatMult(Eigen::Quaterniond q1, Eigen::Quaterniond q2);
-  
+  	Eigen::Vector3d getLittleJ(RigidBody rA, RigidBody rB, Eigen::Vector3d normal, double epsilon);
+
  protected:
 	int mFrame;
 	double mTimeStep;

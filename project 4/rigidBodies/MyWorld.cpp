@@ -156,11 +156,34 @@ void MyWorld::collisionHandling() {
     double epsilon = 0.8;
     
     // TODO: handle the collision events
+
+    //Update each rigid body's vals
+    for(int body = 0; body<mRigidBodies.size(); body++) {
+        mRigidBodies[body]->mLinMomentum += mRigidBodies[body]->mAccumulatedForce;
+        mRigidBodies[body]->mAngMomentum += mRigidBodies[body]->mAccumulatedTorque;
+
+        //Set their accumulators back to zero
+        mRigidBodies[body]->mAccumulatedForce.setZero();
+        mRigidBodies[body]->mAccumulatedTorque.setZero();
+    }
 }
 
 Eigen::Vector3d MyWorld::getLittleJ(RigidBody rA, RigidBody rB, Eigen::Vector3d normal, 
     double epsilon) {
     //TODO: Check if one of the rigid bodies is null -> pinata
+
+    Eigen::Vector3d littleJ;
+    littleJ.setZero();
+
+    //****Calculate Vr-pre****
+
+    //**Calculate dotPA
+    Eigen::Matrix3d iA = rA.mOrientation * rA.iBody * rA.mOrientation.transpose();
+    Eigen::Vector3d omegaA;
+
+    Eigen::Vector3d dotPA = rA.mLinMomentum / rA.mMass + omegaA.cross(rA.mPosition);
+
+    return littleJ;
 }
 
 
