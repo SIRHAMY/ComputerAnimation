@@ -43,10 +43,8 @@ bool MyWorld::makeCandy() {
 
     bool collisionFound = true;
     while(collisionFound) {
-        //double x = (0 - -0.5) * ( (double) rand() / (double) RAND_MAX) + -1;
-        //double y = (0.5 - 0) * ( (double) rand() / (double) RAND_MAX) + -1;
-        double x = 0.3;
-        double y = -0.5;
+        double x = (0 - -0.5) * ( (double) rand() / (double) RAND_MAX) + -1;
+        double y = (0.5 - 0) * ( (double) rand() / (double) RAND_MAX) + -1;
 
         newCandy->mPosition[0] = x;
         newCandy->mPosition[1] = y;
