@@ -173,7 +173,7 @@ void MyWorld::collisionHandling() {
 
         double littleJ = 0;
         //TODO: How to tell if obj pointing at is null?
-        if(rb1 != NULL && rb2 != NULL) {
+        if(rb1 && rb2) {
             //For cases when rigid on rigid, not pinata
             littleJ = getLittleJ(*rb1, *rb2, normal, collisionPt, epsilon);
 
@@ -193,19 +193,19 @@ void MyWorld::collisionHandling() {
             rb2->mAccumulatedForce += bigJB;
             rb2->mAccumulatedTorque += rB.cross(bigJB);
 
-        } else if (rb2 != NULL) {
+        } else if (rb2) {
             //rb1 is Pinata
             littleJ = getLittleJPinata(*rb2, vPinata, normal, collisionPt, epsilon); //Negate because it's the "B" particle
 
             //**Update particle B**
             Eigen::Vector3d rB = collisionPt - rb2->mPosition;
-            Eigen::Vector3d bigJB = -littleJ * normal;
+            Eigen::Vector3d bigJB = littleJ * normal;
 
             rb2->mAccumulatedForce += bigJB;
             rb2->mAccumulatedTorque += rB.cross(bigJB);
 
             std::cout << "Debug: " << "littleJ=" << littleJ << std::endl;
-        } else if (rb1 != NULL) {
+        } else if (rb1) {
             //rb2 is Pinata
             littleJ = getLittleJPinata(*rb1, vPinata, normal, collisionPt, epsilon);
 
@@ -249,7 +249,7 @@ double MyWorld::getLittleJPinata(RigidBody rigidA, Eigen::Vector3d pinataVelocit
     //**Calculate dotPP
     //Goes to zero so collisions don't affect it
 
-    double vR = normal.dot(dotPA);
+    double vR = normal.dot(dotPA - pinataVelocity);
 
     //****littleJDenominator****
     Eigen::Vector3d rA = collisionPt - rigidA.mPosition;
