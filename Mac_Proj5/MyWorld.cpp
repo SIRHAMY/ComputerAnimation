@@ -1,4 +1,5 @@
 #include "MyWorld.h"
+#include <iostream>
 
 
 MyWorld::MyWorld() {
@@ -102,10 +103,82 @@ void MyWorld::advectDensity(double *_d, double *_d0, double *_u, double *_v) {
 
 void MyWorld::advectVelocity(double *_u, double *_v, double *_u0, double *_v0) {
     // TODO: Add velocity advection code here
+
+    std::cout << "AdvectVelocity" << std::endl;
+
+    advectDensity(_u, _u0, _u0, _v0);
+    advectDensity(_v, _v0, _u0, _v0);
+
+    /*
+    double dt0 = mTimeStep * mNumCells;  // h / x 
+    for (int i = 1; i <= mNumCells; i++) {
+        for (int j = 1; j <= mNumCells; j++) {
+            double x = i- dt0 * _u0[IX(i,j)];  // dt0 * _u[IX(i,j)] computes how many cells can a particle travel in one time step 
+            double y = j - dt0 * _v0[IX(i,j)];
+            if (x < 0.5) 
+                x = 0.5f; 
+            if (x > mNumCells + 0.5) 
+                x = mNumCells + 0.5;
+            int i0 = (int)x;
+            int i1 = i0 + 1;
+            if (y < 0.5) 
+                y = 0.5;
+            if (y > mNumCells + 0.5)
+                y = mNumCells + 0.5;
+            int j0 = (int)y;
+            int j1 = j0 + 1;
+            double s1 = x - i0;
+            double s0 = 1 - s1;
+            double t1 = y - j0;
+            double t0 = 1 - t1;
+            _u[IX(i,j)] = s0 * (t0 * _u0[IX(i0, j0)] + t1 * _u0[IX(i0,j1)])+ s1 * (t0 * _u0[IX(i1, j0)] + t1 * _u0[IX(i1,j1)]);
+            _v[IX(i,j)] = s0 * (t0 * _v0[IX(i0, j0)] + t1 * _v0[IX(i0,j1)])+ s1 * (t0 * _v0[IX(i1, j0)] + t1 * _v0[IX(i1,j1)]);
+        }   
+        
+    }*/
+
+    setBoundary(_u);
+    setBoundary(_v);
 }
 
 void MyWorld::project(double *_u, double *_v, double *_u0, double *_v0) {
    // TODO: Add projection code here
+    /*std::cout << "Project" << std::endl;
+    std::cout << "U" << std::endl;
+    std::cout << _u << std::endl;
+
+    int i, j, k;
+    float h;
+    int N = mNumCells;
+    h = 1.0/mNumCells;
+    for ( i=1 ; i<=N ; i++ ) {
+        for ( j=1 ; j<=N ; j++ ) {
+            _v0[IX(i,j)] = -0.5*h*(_u[IX(i+1,j)]-_u[IX(i-1,j)]+
+            _v[IX(i,j+1)]-_v[IX(i,j-1)]);
+            _u0[IX(i,j)] = 0;
+        }
+    }
+    setBoundary(_v0); 
+    setBoundary( _u0 );
+
+    for ( k=0 ; k<20 ; k++ ) {
+        for ( i=1 ; i<=N ; i++ ) {
+            for ( j=1 ; j<=N ; j++ ) {
+                _u0[IX(i,j)] = (_v0[IX(i,j)]+_u0[IX(i-1,j)]+_u0[IX(i+1,j)]+
+                 _u0[IX(i,j-1)]+_u0[IX(i,j+1)])/4;
+            }
+        }
+        setBoundary(_u0 );
+    }
+    for ( i=1 ; i<=N ; i++ ) {
+        for ( j=1 ; j<=N ; j++ ) {
+            _u[IX(i,j)] -= 0.5*(_u0[IX(i+1,j)]-_u0[IX(i-1,j)])/h;
+            _v[IX(i,j)] -= 0.5*(_u0[IX(i,j+1)]-_u0[IX(i,j-1)])/h;
+        }
+    }
+    setBoundary(_u ); 
+    setBoundary(_v );
+    */
 }
 
 void MyWorld::externalForces() {
