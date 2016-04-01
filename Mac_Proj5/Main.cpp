@@ -57,7 +57,7 @@ void drawDensity();
 // main function
 int main(int argc, char *argv[])
 {
-    mySimulator.initialize(numCells, 0.1, 0.00001, 0.0);
+    mySimulator.initialize(numCells, 0.1, 0.0, 0.0);
     
     glutInit(&argc, argv);
     glutInitWindowSize(window_width, window_height);
@@ -166,17 +166,20 @@ void myGlutMouse(int button, int state, int x, int y) {
         int i = (int)((mouseX / (double)window_width) * mySimulator.getNumCells() + 1);
         int j = (int)(((window_height - mouseY) / (double)window_height) * mySimulator.getNumCells() + 1);
 	
+        std::cout << "DEBUG: MOUSEDOWN" << std::endl;
+
         if (i < 1 || i > mySimulator.getNumCells() || j < 1 || j > mySimulator.getNumCells())
             return;
         
         if (button == GLUT_LEFT_BUTTON) {
             leftClick = true;
             mySimulator.setDensity(i, j, 100.0);
-     
+            std::cout << "DEBUG: LEFTCLICK" << std::endl;
         } else if (button == GLUT_RIGHT_BUTTON || button == GLUT_MIDDLE_BUTTON) {
             rightClick = true;
             mySimulator.setU(i, j, 5.0);
             mySimulator.setV(i, j, 5.0);
+            std::cout << "DEBUG: RIGHTCLICK" << std::endl;
         }
     } else {
         leftClick = false;

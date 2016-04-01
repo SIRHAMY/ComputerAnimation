@@ -104,7 +104,7 @@ void MyWorld::advectDensity(double *_d, double *_d0, double *_u, double *_v) {
 void MyWorld::advectVelocity(double *_u, double *_v, double *_u0, double *_v0) {
     // TODO: Add velocity advection code here
 
-    std::cout << "AdvectVelocity" << std::endl;
+    //std::cout << "AdvectVelocity" << std::endl;
 
     advectDensity(_u, _u0, _u0, _v0);
     advectDensity(_v, _v0, _u0, _v0);
@@ -137,15 +137,15 @@ void MyWorld::advectVelocity(double *_u, double *_v, double *_u0, double *_v0) {
         
     }*/
 
-    setBoundary(_u);
-    setBoundary(_v);
+    //setBoundary(_u);
+    //setBoundary(_v);
 }
 
 void MyWorld::project(double *_u, double *_v, double *_u0, double *_v0) {
    // TODO: Add projection code here
-    /*std::cout << "Project" << std::endl;
-    std::cout << "U" << std::endl;
-    std::cout << _u << std::endl;
+    //std::cout << "Project" << std::endl;
+    //std::cout << "U" << std::endl;
+    //std::cout << _u << std::endl;
 
     int i, j, k;
     float h;
@@ -178,7 +178,7 @@ void MyWorld::project(double *_u, double *_v, double *_u0, double *_v0) {
     }
     setBoundary(_u ); 
     setBoundary(_v );
-    */
+    
 }
 
 void MyWorld::externalForces() {
