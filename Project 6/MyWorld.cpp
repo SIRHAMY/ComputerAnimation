@@ -40,10 +40,59 @@ void MyWorld::solve() {
 VectorXd MyWorld::updateGradients() {
   // compute c(q)
   mC = getMarker(mConstrainedMarker)->getWorldPosition() - mTarget;
+  mJ.setZero();
 
   // compute J(q)
   Vector4d offset;
   offset << getMarker(mConstrainedMarker)->getLocalPosition(), 1; // Create a vector in homogeneous coordinates
+
+  //HAMY Stab
+
+  //Setup vars
+
+  BodyNode *node = getMarker(mConstrainedMarker)->getBodyNode();
+  Joint *joint = node->getParentJoint();
+  Matrix4d worldToParent = node->getParentBodyNode()->getTransform().matrix();
+  Matrix4d parentToJoint = joint->getTransformFromParentBodyNode().matrix();
+  Matrix4d dR = joint->getTransformDerivative(0); // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
+  Matrix4d R = joint->getTransform(1).matrix();
+  Matrix4d jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
+  Vector4d jCol = worldToParent * parentToJoint * dR * R * jointToChild * offset;
+  int colIndex = joint->getIndexInSkeleton(0);
+  mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of jCol
+  dR = joint->getTransformDerivative(1);
+  R = joint->getTransform(0).matrix();
+  jCol = worldToParent * parentToJoint * R * dR * jointToChild * offset;
+  colIndex = joint->getIndexInSkeleton(1);
+  mJ.col(colIndex) = jCol.head(3);
+  offset = parentToJoint * joint->getTransform(0).matrix() * joint->getTransform(1).matrix() * jointToChild * offset; // Update offset so it stores the chain below the parent joint
+
+  //TODO: Might want to change this to check if root using given root fcn
+  
+  //Iterate until we get to the root node
+  while(node->getParentBodyNode() != NULL) {
+    node = node->getParentBodyNode(); // return NULL if node is the root node
+    joint = node->getParentJoint();
+    worldToParent = node->getParentBodyNode()->getTransform().matrix();
+    parentToJoint = joint->getTransformFromParentBodyNode().matrix();
+    dR = joint->getTransformDerivative(0); // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
+    jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
+
+    //TODO: R1, R2, ... Rn code depending on DOFs
+    int nDofs = joint->getNumDofs;
+    for(int dof = 0; dof<nDofs; dof++){
+
+    }
+
+    jCol = worldToParent * parentToJoint * dR * jointToChild * offset;
+    colIndex = joint->getIndexInSkeleton(0);
+    mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of jCol
+    offset = parentToJoint * joint->getTransform(0).matrix() * jointToChild * offset;
+  }
+
+
+  
+/* Begin skeleton code
   // w.r.t ankle dofs
   BodyNode *node = getMarker(mConstrainedMarker)->getBodyNode();
   Joint *joint = node->getParentJoint();
@@ -100,6 +149,7 @@ VectorXd MyWorld::updateGradients() {
   jCol = worldToParent * parentToJoint * R1 * R2 * dR * jointToChild * offset;
   colIndex = joint->getIndexInSkeleton(2);
   mJ.col(colIndex) = jCol.head(3);
+*/
 
   // compute gradients
   VectorXd gradients = 2 * mJ.transpose() * mC;
