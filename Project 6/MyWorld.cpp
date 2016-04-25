@@ -38,9 +38,12 @@ void MyWorld::solve() {
 
 // Current code only works for the left leg with only one constraint
 VectorXd MyWorld::updateGradients() {
+    mJ.setZero();
+    mC.setZero();
+
   // compute c(q)
+  std::cout << "HAMYDEBUG: mConstrainedMarker = " << getMarker(mConstrainedMarker) << std::endl;
   mC = getMarker(mConstrainedMarker)->getWorldPosition() - mTarget;
-  mJ.setZero();
 
   // compute J(q)
   Vector4d offset;
@@ -90,7 +93,7 @@ VectorXd MyWorld::updateGradients() {
         dR = joint->getTransformDerivative(0);
         jCol = worldToParent * parentToJoint * dR * jointToChild * offset;
         colIndex = joint->getIndexInSkeleton(0);
-        mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of jCol
+        mJ.col(colIndex) = jCol; // Take the first 3 elelemtns of jCol
         offset = parentToJoint * joint->getTransform(0).matrix() * jointToChild * offset;
 
         break;
@@ -101,13 +104,13 @@ VectorXd MyWorld::updateGradients() {
         jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
         jCol = worldToParent * parentToJoint * dR * R * jointToChild * offset;
         colIndex = joint->getIndexInSkeleton(0);
-        mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of jCol
+        mJ.col(colIndex) = jCol; // Take the first 3 elelemtns of jCol
 
         dR = joint->getTransformDerivative(1);
         R = joint->getTransform(0).matrix();
         jCol = worldToParent * parentToJoint * R * dR * jointToChild * offset;
         colIndex = joint->getIndexInSkeleton(1);
-        mJ.col(colIndex) = jCol.head(3);
+        mJ.col(colIndex) = jCol;
         offset = parentToJoint * joint->getTransform(0).matrix() * joint->getTransform(1).matrix() * jointToChild * offset; // Upd
 
         break;
@@ -119,21 +122,21 @@ VectorXd MyWorld::updateGradients() {
         jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
         jCol = worldToParent * parentToJoint * dR * R1 * R2 * jointToChild * offset;
         colIndex = joint->getIndexInSkeleton(0);
-        mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of J
+        mJ.col(colIndex) = jCol; // Take the first 3 elelemtns of J
 
         R1 = joint->getTransform(0).matrix();
         dR = joint->getTransformDerivative(1);
         R2 = joint->getTransform(2).matrix();
         jCol = worldToParent * parentToJoint * R1 * dR * R2 * jointToChild * offset;
         colIndex = joint->getIndexInSkeleton(1);
-        mJ.col(colIndex) = jCol.head(3);
+        mJ.col(colIndex) = jCol;
 
         R1 = joint->getTransform(0).matrix();
         R2 = joint->getTransform(1).matrix();
         dR = joint->getTransformDerivative(2);
         jCol = worldToParent * parentToJoint * R1 * R2 * dR * jointToChild * offset;
         colIndex = joint->getIndexInSkeleton(2);
-        mJ.col(colIndex) = jCol.head(3);
+        mJ.col(colIndex) = jCol;
 
         break;
       default: std::cout << "HAMY: Unexpected nDOF = " << nDofs << std::endl;
@@ -217,16 +220,17 @@ VectorXd MyWorld::updateGradients() {
 
 // Current code only handlse one constraint on the left foot.
 void MyWorld::createConstraint(int _index) {
-  if (_index == 0) {
+  //if (_index == 0) {
+    std::cout << "HAMYDEBUG: constraint _index = " << _index << std::endl;
     mTarget = getMarker(_index)->getWorldPosition();
     mConstrainedMarker = _index;
-  } else {
-    mConstrainedMarker = -1;
-  }
+  //} else {
+  //  mConstrainedMarker = -1;
+  //}
 }
 
 void MyWorld::modifyConstraint(Vector3d _deltaP) {
-  if (mConstrainedMarker == 0)
+  //if (mConstrainedMarker == 0)
     mTarget += _deltaP;
 }
 
