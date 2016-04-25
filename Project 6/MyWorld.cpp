@@ -52,8 +52,8 @@ VectorXd MyWorld::updateGradients() {
 
   BodyNode *node = getMarker(mConstrainedMarker)->getBodyNode();
   Joint *joint = node->getParentJoint();
-  Matrix4d worldToParent = node->getParentBodyNode()->getTransform().matrix();
-  Matrix4d parentToJoint = joint->getTransformFromParentBodyNode().matrix();
+  Matrix4d worldToParent;
+  Matrix4d parentToJoint;
   
   //Declare Vars
   Matrix4d dR; // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
@@ -68,7 +68,14 @@ VectorXd MyWorld::updateGradients() {
 
   //Iterate until we get to the root node
   while(true) {
-    worldToParent = node->getParentBodyNode()->getTransform().matrix();
+
+    std::cout << "HAMY DEBUG: Beginning new looop" << std::endl;
+
+    if(node->getParentBodyNode() == NULL) {
+      worldToParent = worldToParent.setIdentity();
+    } else {
+      worldToParent = node->getParentBodyNode()->getTransform().matrix();
+    }
     parentToJoint = joint->getTransformFromParentBodyNode().matrix();
      // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
     jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
@@ -134,6 +141,7 @@ VectorXd MyWorld::updateGradients() {
     }
 
     if(node != mSkel->getRootBodyNode()) {
+      std::cout << "HAMY DEBUG: Not root, continue loop" << std::endl;
       node = node->getParentBodyNode(); // return NULL if node is the root node
       joint = node->getParentJoint();
     } else {
