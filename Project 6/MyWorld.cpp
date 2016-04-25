@@ -54,40 +54,91 @@ VectorXd MyWorld::updateGradients() {
   Joint *joint = node->getParentJoint();
   Matrix4d worldToParent = node->getParentBodyNode()->getTransform().matrix();
   Matrix4d parentToJoint = joint->getTransformFromParentBodyNode().matrix();
-  Matrix4d dR = joint->getTransformDerivative(0); // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
-  Matrix4d R = joint->getTransform(1).matrix();
-  Matrix4d jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
-  Vector4d jCol = worldToParent * parentToJoint * dR * R * jointToChild * offset;
-  int colIndex = joint->getIndexInSkeleton(0);
-  mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of jCol
-  dR = joint->getTransformDerivative(1);
-  R = joint->getTransform(0).matrix();
-  jCol = worldToParent * parentToJoint * R * dR * jointToChild * offset;
-  colIndex = joint->getIndexInSkeleton(1);
-  mJ.col(colIndex) = jCol.head(3);
-  offset = parentToJoint * joint->getTransform(0).matrix() * joint->getTransform(1).matrix() * jointToChild * offset; // Update offset so it stores the chain below the parent joint
+  
+  //Declare Vars
+  Matrix4d dR; // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
+  Matrix4d R;
+  Matrix4d R1;
+  Matrix4d R2;
+  Matrix4d jointToChild;
+  Vector4d jCol;
+  int colIndex;
 
   //TODO: Might want to change this to check if root using given root fcn
-  
+
   //Iterate until we get to the root node
-  while(node->getParentBodyNode() != NULL) {
-    node = node->getParentBodyNode(); // return NULL if node is the root node
-    joint = node->getParentJoint();
+  while(true) {
     worldToParent = node->getParentBodyNode()->getTransform().matrix();
     parentToJoint = joint->getTransformFromParentBodyNode().matrix();
-    dR = joint->getTransformDerivative(0); // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
+     // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
     jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
 
     //TODO: R1, R2, ... Rn code depending on DOFs
-    int nDofs = joint->getNumDofs;
-    for(int dof = 0; dof<nDofs; dof++){
+    int nDofs = joint->getNumDofs();
+    std::cout << "HAMY: nDofs=" << nDofs << std::endl;
+    //Can only have up to 3 DOFs on any one piece
+    switch(nDofs){
+      case 1: std::cout << "HAMY: 1 nDOF" << std::endl;
 
+        dR = joint->getTransformDerivative(0);
+        jCol = worldToParent * parentToJoint * dR * jointToChild * offset;
+        colIndex = joint->getIndexInSkeleton(0);
+        mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of jCol
+        offset = parentToJoint * joint->getTransform(0).matrix() * jointToChild * offset;
+
+        break;
+      case 2: std::cout << "HAMY: 2 nDOF" << std::endl;
+
+        dR = joint->getTransformDerivative(0); // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
+        R = joint->getTransform(1).matrix();
+        jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
+        jCol = worldToParent * parentToJoint * dR * R * jointToChild * offset;
+        colIndex = joint->getIndexInSkeleton(0);
+        mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of jCol
+
+        dR = joint->getTransformDerivative(1);
+        R = joint->getTransform(0).matrix();
+        jCol = worldToParent * parentToJoint * R * dR * jointToChild * offset;
+        colIndex = joint->getIndexInSkeleton(1);
+        mJ.col(colIndex) = jCol.head(3);
+        offset = parentToJoint * joint->getTransform(0).matrix() * joint->getTransform(1).matrix() * jointToChild * offset; // Upd
+
+        break;
+      case 3: std::cout << "HAMY: 3 nDOF" << std::endl;
+
+        dR = joint->getTransformDerivative(0); // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
+        R1 = joint->getTransform(1).matrix();
+        R2 = joint->getTransform(2).matrix();
+        jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
+        jCol = worldToParent * parentToJoint * dR * R1 * R2 * jointToChild * offset;
+        colIndex = joint->getIndexInSkeleton(0);
+        mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of J
+
+        R1 = joint->getTransform(0).matrix();
+        dR = joint->getTransformDerivative(1);
+        R2 = joint->getTransform(2).matrix();
+        jCol = worldToParent * parentToJoint * R1 * dR * R2 * jointToChild * offset;
+        colIndex = joint->getIndexInSkeleton(1);
+        mJ.col(colIndex) = jCol.head(3);
+
+        R1 = joint->getTransform(0).matrix();
+        R2 = joint->getTransform(1).matrix();
+        dR = joint->getTransformDerivative(2);
+        jCol = worldToParent * parentToJoint * R1 * R2 * dR * jointToChild * offset;
+        colIndex = joint->getIndexInSkeleton(2);
+        mJ.col(colIndex) = jCol.head(3);
+
+        break;
+      default: std::cout << "HAMY: Unexpected nDOF = " << nDofs << std::endl;
+        break;
     }
 
-    jCol = worldToParent * parentToJoint * dR * jointToChild * offset;
-    colIndex = joint->getIndexInSkeleton(0);
-    mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of jCol
-    offset = parentToJoint * joint->getTransform(0).matrix() * jointToChild * offset;
+    if(node != mSkel->getRootBodyNode()) {
+      node = node->getParentBodyNode(); // return NULL if node is the root node
+      joint = node->getParentJoint();
+    } else {
+      break;
+    }
   }
 
 
