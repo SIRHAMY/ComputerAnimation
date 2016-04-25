@@ -42,14 +42,13 @@ VectorXd MyWorld::updateGradients() {
     mC.setZero();
 
   // compute c(q)
-  std::cout << "HAMYDEBUG: mConstrainedMarker = " << getMarker(mConstrainedMarker) << std::endl;
+  //std::cout << "HAMYDEBUG: mConstrainedMarker = " << getMarker(mConstrainedMarker) << std::endl;
   mC = getMarker(mConstrainedMarker)->getWorldPosition() - mTarget;
+  std::cout << "C(q) = " << mC << std::endl;
 
   // compute J(q)
   Vector4d offset;
   offset << getMarker(mConstrainedMarker)->getLocalPosition(), 1; // Create a vector in homogeneous coordinates
-
-  //HAMY Stab
 
   //Setup vars
 
@@ -72,7 +71,7 @@ VectorXd MyWorld::updateGradients() {
   //Iterate until we get to the root node
   while(true) {
 
-    std::cout << "HAMY DEBUG: Beginning new looop" << std::endl;
+    //std::cout << "HAMY DEBUG: Beginning new looop" << std::endl;
 
     if(node->getParentBodyNode() == NULL) {
       worldToParent = worldToParent.setIdentity();
@@ -85,36 +84,36 @@ VectorXd MyWorld::updateGradients() {
 
     //TODO: R1, R2, ... Rn code depending on DOFs
     int nDofs = joint->getNumDofs();
-    std::cout << "HAMY: nDofs=" << nDofs << std::endl;
+    //std::cout << "HAMY: nDofs=" << nDofs << std::endl;
     //Can only have up to 3 DOFs on any one piece
     switch(nDofs){
-      case 1: std::cout << "HAMY: 1 nDOF" << std::endl;
+      case 1: //std::cout << "HAMY: 1 nDOF" << std::endl;
 
         dR = joint->getTransformDerivative(0);
         jCol = worldToParent * parentToJoint * dR * jointToChild * offset;
         colIndex = joint->getIndexInSkeleton(0);
-        mJ.col(colIndex) = jCol; // Take the first 3 elelemtns of jCol
+        mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of jCol
         offset = parentToJoint * joint->getTransform(0).matrix() * jointToChild * offset;
 
         break;
-      case 2: std::cout << "HAMY: 2 nDOF" << std::endl;
+      case 2: //std::cout << "HAMY: 2 nDOF" << std::endl;
 
         dR = joint->getTransformDerivative(0); // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
         R = joint->getTransform(1).matrix();
         jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
         jCol = worldToParent * parentToJoint * dR * R * jointToChild * offset;
         colIndex = joint->getIndexInSkeleton(0);
-        mJ.col(colIndex) = jCol; // Take the first 3 elelemtns of jCol
+        mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of jCol
 
         dR = joint->getTransformDerivative(1);
         R = joint->getTransform(0).matrix();
         jCol = worldToParent * parentToJoint * R * dR * jointToChild * offset;
         colIndex = joint->getIndexInSkeleton(1);
-        mJ.col(colIndex) = jCol;
+        mJ.col(colIndex) = jCol.head(3);
         offset = parentToJoint * joint->getTransform(0).matrix() * joint->getTransform(1).matrix() * jointToChild * offset; // Upd
 
         break;
-      case 3: std::cout << "HAMY: 3 nDOF" << std::endl;
+      case 3: //std::cout << "HAMY: 3 nDOF" << std::endl;
 
         dR = joint->getTransformDerivative(0); // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
         R1 = joint->getTransform(1).matrix();
@@ -122,96 +121,37 @@ VectorXd MyWorld::updateGradients() {
         jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
         jCol = worldToParent * parentToJoint * dR * R1 * R2 * jointToChild * offset;
         colIndex = joint->getIndexInSkeleton(0);
-        mJ.col(colIndex) = jCol; // Take the first 3 elelemtns of J
+        mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of J
 
         R1 = joint->getTransform(0).matrix();
         dR = joint->getTransformDerivative(1);
         R2 = joint->getTransform(2).matrix();
         jCol = worldToParent * parentToJoint * R1 * dR * R2 * jointToChild * offset;
         colIndex = joint->getIndexInSkeleton(1);
-        mJ.col(colIndex) = jCol;
+        mJ.col(colIndex) = jCol.head(3);
 
         R1 = joint->getTransform(0).matrix();
         R2 = joint->getTransform(1).matrix();
         dR = joint->getTransformDerivative(2);
         jCol = worldToParent * parentToJoint * R1 * R2 * dR * jointToChild * offset;
         colIndex = joint->getIndexInSkeleton(2);
-        mJ.col(colIndex) = jCol;
+        mJ.col(colIndex) = jCol.head(3);
+
+        offset = parentToJoint * joint->getTransform(0).matrix() * joint->getTransform(1).matrix() * joint->getTransform(2).matrix() * jointToChild * offset;
 
         break;
-      default: std::cout << "HAMY: Unexpected nDOF = " << nDofs << std::endl;
+      default: //std::cout << "HAMY: Unexpected nDOF = " << nDofs << std::endl;
         break;
     }
 
     if(node != mSkel->getRootBodyNode()) {
-      std::cout << "HAMY DEBUG: Not root, continue loop" << std::endl;
+      //std::cout << "HAMY DEBUG: Not root, continue loop" << std::endl;
       node = node->getParentBodyNode(); // return NULL if node is the root node
       joint = node->getParentJoint();
     } else {
       break;
     }
   }
-
-
-  
-/* Begin skeleton code
-  // w.r.t ankle dofs
-  BodyNode *node = getMarker(mConstrainedMarker)->getBodyNode();
-  Joint *joint = node->getParentJoint();
-  Matrix4d worldToParent = node->getParentBodyNode()->getTransform().matrix();
-  Matrix4d parentToJoint = joint->getTransformFromParentBodyNode().matrix();
-  Matrix4d dR = joint->getTransformDerivative(0); // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
-  Matrix4d R = joint->getTransform(1).matrix();
-  Matrix4d jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
-  Vector4d jCol = worldToParent * parentToJoint * dR * R * jointToChild * offset;
-  int colIndex = joint->getIndexInSkeleton(0);
-  mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of jCol
-  dR = joint->getTransformDerivative(1);
-  R = joint->getTransform(0).matrix();
-  jCol = worldToParent * parentToJoint * R * dR * jointToChild * offset;
-  colIndex = joint->getIndexInSkeleton(1);
-  mJ.col(colIndex) = jCol.head(3);
-  offset = parentToJoint * joint->getTransform(0).matrix() * joint->getTransform(1).matrix() * jointToChild * offset; // Update offset so it stores the chain below the parent joint
-
-  // w.r.t knee dof
-  node = node->getParentBodyNode(); // return NULL if node is the root node
-  joint = node->getParentJoint();
-  worldToParent = node->getParentBodyNode()->getTransform().matrix();
-  parentToJoint = joint->getTransformFromParentBodyNode().matrix();
-  dR = joint->getTransformDerivative(0); // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
-  jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
-  jCol = worldToParent * parentToJoint * dR * jointToChild * offset;
-  colIndex = joint->getIndexInSkeleton(0);
-  mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of jCol
-  offset = parentToJoint * joint->getTransform(0).matrix() * jointToChild * offset;
-
-  // w.r.t hip dofs
-  node = node->getParentBodyNode();
-  joint = node->getParentJoint();
-  worldToParent = node->getParentBodyNode()->getTransform().matrix();
-  parentToJoint = joint->getTransformFromParentBodyNode().matrix();
-  dR = joint->getTransformDerivative(0); // Doesn't need .matrix() because it returns a Matrix4d instead of Isometry3d
-  Matrix4d R1 = joint->getTransform(1).matrix();
-  Matrix4d R2 = joint->getTransform(2).matrix();
-  jointToChild = joint->getTransformFromChildBodyNode().inverse().matrix();
-  jCol = worldToParent * parentToJoint * dR * R1 * R2 * jointToChild * offset;
-  colIndex = joint->getIndexInSkeleton(0);
-  mJ.col(colIndex) = jCol.head(3); // Take the first 3 elelemtns of J
-
-  R1 = joint->getTransform(0).matrix();
-  dR = joint->getTransformDerivative(1);
-  R2 = joint->getTransform(2).matrix();
-  jCol = worldToParent * parentToJoint * R1 * dR * R2 * jointToChild * offset;
-  colIndex = joint->getIndexInSkeleton(1);
-  mJ.col(colIndex) = jCol.head(3);
-
-  R1 = joint->getTransform(0).matrix();
-  R2 = joint->getTransform(1).matrix();
-  dR = joint->getTransformDerivative(2);
-  jCol = worldToParent * parentToJoint * R1 * R2 * dR * jointToChild * offset;
-  colIndex = joint->getIndexInSkeleton(2);
-  mJ.col(colIndex) = jCol.head(3);
-*/
 
   // compute gradients
   VectorXd gradients = 2 * mJ.transpose() * mC;
@@ -221,7 +161,6 @@ VectorXd MyWorld::updateGradients() {
 // Current code only handlse one constraint on the left foot.
 void MyWorld::createConstraint(int _index) {
   //if (_index == 0) {
-    std::cout << "HAMYDEBUG: constraint _index = " << _index << std::endl;
     mTarget = getMarker(_index)->getWorldPosition();
     mConstrainedMarker = _index;
   //} else {
