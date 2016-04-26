@@ -6,6 +6,20 @@ The code provided are the main files that I worked on. Most (all?) of the projec
 ## Overview
 Click on the titles to watch a demo
 
+### [**Project 1: Interpolation**]
+We had to implement four different kinds of interpolations between custom control points instantiated and removed via mouse clicks. The four interpolations were:
+
+* Linear
+* Bezier
+* Catmull-Rom
+* B-Spline
+
+### [**Project 2: Galileo's Experiment**]
+Here, we compared the accuracy of the numerical integration methods: explicit Euler, midpoint, and analytical. Analytical utilizes the basic formula for gravity while euler and midpoint are step methods that attempt to estimate the correct velocity based on the current state of the body.
+
+### [**Project 3: Tinkertoy**]
+The goal here was to implement constraints such that the firs ball stays on the circle and the second ball is attached to the first by a rigid line, with forces acting on each other as they should. As you can see, the longer the simulation runs, the more error is introduced until it finally spins out of control.
+
 ### [**Project 4: Pinata**](https://www.youtube.com/watch?v=lrPQJfbUBtQ&feature=youtu.be)
 We were given skeleton code that provided a box (the pinata) and two rigid bodies - one a cube and the other a sphere. Starting the simulation would result in the rigid bodies falling infinitely.
 
